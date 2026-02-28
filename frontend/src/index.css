@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-50: #fef9f0;
+  --color-brand-100: #fcefd8;
+  --color-brand-200: #f5d5a0;
+  --color-brand-300: #e8b85e;
+  --color-brand-400: #d4952a;
+  --color-brand-500: #c2410c;
+  --color-brand-600: #9a3412;
+  --color-brand-700: #7c2d12;
+  --color-brand-800: #5c1e0e;
+  --color-brand-900: #431407;
+  --color-saffron: #ff6f00;
+  --color-gold: #d4a017;
+  --color-maroon: #800000;
+  --color-cream: #fdf6ec;
+  --color-temple: #e8d5b7;
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    color: #1a1a1a;
+    background-color: var(--color-cream);
+    transition-property: color, background-color;
+    transition-duration: 300ms;
+  }
+
+  .dark body,
+  .dark {
+    background-color: #111827;
+    color: #f3f4f6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+  }
+}
+
+/* Masonry Grid */
+.masonry-grid {
+  display: flex;
+  margin-left: -16px;
+  width: auto;
+}
+
+.masonry-grid_column {
+  padding-left: 16px;
+  background-clip: padding-box;
+}
+
+/* Swiper pagination dot override */
+.swiper-pagination-bullet-active {
+  background: var(--color-saffron) !important;
+}
+
+/* Om symbol floating animation */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Vintage divider */
+.vintage-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vintage-divider::before,
+.vintage-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-gold), transparent);
+}
