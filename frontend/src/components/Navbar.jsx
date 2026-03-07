@@ -1,17 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { FaMoon, FaSun, FaBars, FaTimes, FaPlane } from 'react-icons/fa';
+import { FaBars, FaTimes } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import knkLogo from '../assets/file_000000009b94720784d2ef29a08ad1c8.png';
+
+const E = (str) => <span className="apple-emoji">{str}</span>;
 
 const Navbar = () => {
-    const [isDark, setIsDark] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
-
-    useEffect(() => {
-        if (document.documentElement.classList.contains('dark')) setIsDark(true);
-    }, []);
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 50);
@@ -21,113 +19,164 @@ const Navbar = () => {
 
     useEffect(() => { setIsOpen(false); }, [location]);
 
-    const toggleTheme = () => {
-        document.documentElement.classList.toggle('dark');
-        setIsDark(!isDark);
-    };
-
     const navLinks = [
         { to: '/', label: 'Home' },
         { to: '/packages', label: 'Packages' },
-        { to: '/contact', label: 'Enquiry' },
-        { to: '/contact', label: 'Contact Us' },
+        { to: '/#about', label: 'About' },
+        { to: '/contact', label: 'Contact' },
     ];
 
     return (
         <>
-            {/* Top decorative bar */}
-            <div className="bg-maroon text-cream text-xs text-center py-1.5 tracking-widest font-semibold">
-                Your Premium Travel Partner — Explore the World with KNK Trip Cart
+            {/* Top announcement bar */}
+            <div
+                className="text-center py-2.5 tracking-wider font-semibold text-sm px-4"
+                style={{ background: 'linear-gradient(90deg,#92400e,#b45309,#92400e)', color: '#fef3c7' }}
+            >
+                <span className="apple-emoji">🙏</span> Your Premium Spiritual Travel Partner — KNK Trip Cart <span className="apple-emoji">🙏</span>
             </div>
 
-            <nav className={`sticky top-0 z-50 transition-all duration-500 ${scrolled
-                ? 'bg-cream/95 dark:bg-gray-900/95 shadow-lg backdrop-blur-md'
-                : 'bg-cream dark:bg-gray-900'}`}>
-
-                {/* Vintage border */}
-                <div className="h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
+            <nav
+                className="sticky top-0 z-50 transition-all duration-500"
+                style={{
+                    backgroundColor: scrolled ? 'rgba(255,255,255,0.97)' : '#ffffff',
+                    borderBottom: scrolled ? '2px solid #fbbf24' : '1px solid rgba(251,191,36,0.25)',
+                    boxShadow: scrolled ? '0 4px 32px rgba(251,191,36,0.18)' : 'none',
+                    backdropFilter: scrolled ? 'blur(20px)' : 'none',
+                }}
+            >
+                {/* Top thin gold rule */}
+                <div style={{ height: '3px', background: 'linear-gradient(to right,transparent,#fbbf24,#f59e0b,#fbbf24,transparent)' }} />
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-18 items-center py-3">
+                    <div className="flex justify-between items-center py-1.5">
 
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center gap-3 group">
-                            <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.6 }}>
-                                <FaPlane className="text-3xl text-saffron group-hover:text-gold transition-colors" />
-                            </motion.div>
-                            <div>
-                                <span className="text-2xl font-serif font-bold text-maroon dark:text-gold tracking-wide">
-                                    KNK Trip Cart
-                                </span>
-                                <p className="text-[10px] text-gold tracking-[0.2em] uppercase -mt-1">Premium Travel Services</p>
-                            </div>
+                        {/* ── Logo ─────────────────────────────────────────── */}
+                        <Link to="/" className="flex items-center group">
+                            <motion.img
+                                src={knkLogo}
+                                alt="KNK Trip Cart"
+                                className="object-contain"
+                                style={{
+                                    height: '68px',
+                                    width: 'auto',
+                                    mixBlendMode: 'multiply',
+                                    filter: 'drop-shadow(0 2px 4px rgba(124,45,18,0.15))',
+                                }}
+                                whileHover={{ scale: 1.04 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                            />
                         </Link>
 
-                        {/* Desktop Links */}
+                        {/* ── Desktop Links ────────────────────────────────── */}
                         <div className="hidden md:flex items-center gap-1">
                             {navLinks.map((link, i) => (
                                 <Link
                                     key={i}
                                     to={link.to}
-                                    className={`relative px-4 py-2 text-sm font-semibold tracking-wide uppercase transition-colors duration-300
-                                        ${location.pathname === link.to
-                                            ? 'text-saffron'
-                                            : 'text-maroon dark:text-cream hover:text-saffron dark:hover:text-gold'}`}
+                                    className="relative px-5 py-2.5 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-amber-50"
+                                    style={{ color: location.pathname === link.to ? '#b45309' : '#78350f' }}
                                 >
                                     {link.label}
                                     {location.pathname === link.to && (
                                         <motion.div
-                                            layoutId="underline"
-                                            className="absolute bottom-0 left-2 right-2 h-0.5 bg-saffron rounded-full"
+                                            layoutId="navUnderline"
+                                            className="absolute bottom-1.5 left-3 right-3 rounded-full"
+                                            style={{ height: '3px', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' }}
                                         />
                                     )}
                                 </Link>
                             ))}
-                            <button
-                                onClick={toggleTheme}
-                                className="ml-4 p-2.5 rounded-full bg-maroon/10 dark:bg-gold/20 text-maroon dark:text-gold hover:bg-maroon/20 dark:hover:bg-gold/30 transition-all"
-                            >
-                                {isDark ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
-                            </button>
+
+                            {/* Contact CTA */}
+                            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                                <Link
+                                    to="/contact"
+                                    className="ml-3 px-7 py-3 text-base font-bold rounded-full inline-flex items-center gap-2"
+                                    style={{
+                                        background: 'linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%)',
+                                        color: '#7c2d12',
+                                        boxShadow: '0 4px 20px rgba(251,191,36,0.45)',
+                                        letterSpacing: '0.03em',
+                                    }}
+                                >
+                                    <span className="apple-emoji">📞</span> Contact Us
+                                </Link>
+                            </motion.div>
                         </div>
 
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="md:hidden p-2 text-maroon dark:text-gold text-2xl"
-                        >
-                            {isOpen ? <FaTimes /> : <FaBars />}
-                        </button>
+                        {/* ── Mobile Burger ──────────────────────────────────── */}
+                        <div className="flex items-center gap-3 md:hidden">
+                            {/* Mobile Contact CTA */}
+                            <motion.div whileTap={{ scale: 0.95 }}>
+                                <Link
+                                    to="/contact"
+                                    className="px-4 py-2.5 text-sm font-bold rounded-full inline-flex items-center gap-1.5"
+                                    style={{
+                                        background: 'linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%)',
+                                        color: '#7c2d12',
+                                        boxShadow: '0 3px 12px rgba(251,191,36,0.4)',
+                                    }}
+                                >
+                                    <span className="apple-emoji text-xs">📞</span> Contact
+                                </Link>
+                            </motion.div>
+                            <motion.button
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="p-3 rounded-xl text-amber-900 text-xl"
+                                style={{ background: 'rgba(251,191,36,0.12)' }}
+                                whileTap={{ scale: 0.88 }}
+                                aria-label="Toggle menu"
+                            >
+                                {isOpen ? <FaTimes /> : <FaBars />}
+                            </motion.button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
+                {/* Bottom thin gold rule */}
+                <div style={{ height: '2px', background: 'linear-gradient(to right,transparent,#fbbf24,transparent)' }} />
 
-                {/* Mobile Menu */}
+                {/* ── Mobile Menu ─────────────────────────────────────────────── */}
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden bg-cream dark:bg-gray-900 border-t border-gold/30 overflow-hidden"
+                            className="md:hidden overflow-hidden"
+                            style={{ background: '#ffffff', borderBottom: '2px solid rgba(251,191,36,0.3)' }}
                         >
-                            <div className="px-4 py-4 space-y-1">
+                            <div className="px-5 py-4 space-y-1.5">
                                 {navLinks.map((link, i) => (
-                                    <Link
+                                    <motion.div
                                         key={i}
-                                        to={link.to}
-                                        className="block px-4 py-3 rounded-lg text-maroon dark:text-cream font-semibold hover:bg-saffron/10 transition-colors"
+                                        initial={{ opacity: 0, x: -16 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.07 }}
                                     >
-                                        {link.label}
-                                    </Link>
+                                        <Link
+                                            to={link.to}
+                                            className="block px-5 py-4 rounded-2xl font-semibold text-lg transition-colors"
+                                            style={{ color: '#78350f', background: location.pathname === link.to ? 'rgba(251,191,36,0.12)' : 'transparent' }}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </motion.div>
                                 ))}
-                                <button
-                                    onClick={toggleTheme}
-                                    className="w-full text-left px-4 py-3 rounded-lg text-maroon dark:text-cream font-semibold hover:bg-saffron/10 transition-colors flex items-center gap-2"
+                                <motion.div
+                                    initial={{ opacity: 0, x: -16 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.3 }}
                                 >
-                                    {isDark ? <FaSun /> : <FaMoon />} {isDark ? 'Light Mode' : 'Dark Mode'}
-                                </button>
+                                    <Link
+                                        to="/contact"
+                                        className="block px-5 py-4 rounded-2xl font-bold text-lg text-center"
+                                        style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#7c2d12' }}
+                                    >
+                                        <span className="apple-emoji">📞</span> Contact Us
+                                    </Link>
+                                </motion.div>
                             </div>
                         </motion.div>
                     )}

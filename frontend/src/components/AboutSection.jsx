@@ -1,6 +1,5 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { FaOm } from 'react-icons/fa';
 
 const CountUp = ({ end, duration = 2, label, suffix = "+" }) => {
     const [count, setCount] = useState(0);
@@ -24,7 +23,7 @@ const CountUp = ({ end, duration = 2, label, suffix = "+" }) => {
             <div className="text-4xl md:text-5xl font-serif font-bold text-saffron mb-2">
                 {count}{suffix}
             </div>
-            <div className="text-maroon/70 dark:text-cream/60 uppercase tracking-widest text-xs font-semibold">
+            <div className="text-maroon/70 uppercase tracking-widest text-xs font-semibold">
                 {label}
             </div>
         </div>
@@ -33,10 +32,10 @@ const CountUp = ({ end, duration = 2, label, suffix = "+" }) => {
 
 const AboutSection = () => {
     return (
-        <section className="py-24 bg-cream dark:bg-gray-900 transition-colors duration-300 relative overflow-hidden">
+        <section className="py-24 bg-cream transition-colors duration-300 relative overflow-hidden">
             {/* Decorative background */}
             <div className="absolute top-10 left-10 text-gold/10 text-[200px] pointer-events-none">
-                <FaOm />
+                <span className="apple-emoji">🙏</span>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -50,7 +49,7 @@ const AboutSection = () => {
                     className="text-center mb-16"
                 >
                     <p className="text-gold tracking-[0.3em] uppercase text-sm font-semibold mb-3">About Us</p>
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold text-maroon dark:text-gold mb-4">
+                    <h2 className="text-4xl md:text-5xl font-serif font-bold text-maroon mb-4">
                         Your Trusted Spiritual Partner
                     </h2>
                     <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent mx-auto" />
@@ -64,10 +63,10 @@ const AboutSection = () => {
                         viewport={{ once: true, margin: "-100px" }}
                         transition={{ duration: 0.8 }}
                     >
-                        <p className="text-base text-maroon/80 dark:text-cream/80 mb-6 leading-relaxed">
+                        <p className="text-base text-maroon/80 mb-6 leading-relaxed">
                             Welcome to KNK Trip Cart, your trusted partner in spiritual and enjoyable travel for more than a decade. With over a decade of expertise, we specialise in providing comprehensive travel options that combine luxury, convenience, and unforgettable experiences. Our services provide a wide range of travel needs, such as lodging, one-day excursions, hill station tours, South and North India tours, and spiritual retreat packages.
                         </p>
-                        <p className="text-base text-maroon/80 dark:text-cream/80 mb-8 leading-relaxed">
+                        <p className="text-base text-maroon/80 mb-8 leading-relaxed">
                             At KNK Trip Cart, we understand the special needs of our customers, particularly seniors. Our special care services ensure that senior citizens have a safe, comfortable, and hassle-free voyage.
                         </p>
 
@@ -78,20 +77,20 @@ const AboutSection = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: 0.2 }}
-                                className="bg-white/50 dark:bg-gray-800/50 p-6 rounded-xl border border-gold/20"
+                                className="bg-white/50 p-6 rounded-xl border border-gold/20"
                             >
-                                <h4 className="text-xl font-serif font-bold text-saffron mb-2">🙏 Our Vision</h4>
-                                <p className="text-sm text-maroon/70 dark:text-cream/70 leading-relaxed">To become a leading travel service provider recognised for providing amazing, safe, and rewarding travel experiences. We strive to combine spiritual and leisure experiences with outstanding care and comfort.</p>
+                                <h4 className="text-xl font-serif font-bold text-saffron mb-2"><span className="apple-emoji">🙏</span> Our Vision</h4>
+                                <p className="text-sm text-maroon/70 leading-relaxed">To become a leading travel service provider recognised for providing amazing, safe, and rewarding travel experiences. We strive to combine spiritual and leisure experiences with outstanding care and comfort.</p>
                             </motion.div>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: 0.4 }}
-                                className="bg-white/50 dark:bg-gray-800/50 p-6 rounded-xl border border-gold/20"
+                                className="bg-white/50 p-6 rounded-xl border border-gold/20"
                             >
-                                <h4 className="text-xl font-serif font-bold text-saffron mb-2">🙏 Our Mission</h4>
-                                <p className="text-sm text-maroon/70 dark:text-cream/70 leading-relaxed">To deliver personalised, reasonable, and high-quality travel services that meet a variety of demands. We prioritise client safety, comfort, and happiness, with a specific focus on older individuals.</p>
+                                <h4 className="text-xl font-serif font-bold text-saffron mb-2"><span className="apple-emoji">🙏</span> Our Mission</h4>
+                                <p className="text-sm text-maroon/70 leading-relaxed">To deliver personalised, reasonable, and high-quality travel services that meet a variety of demands. We prioritise client safety, comfort, and happiness, with a specific focus on older individuals.</p>
                             </motion.div>
                         </div>
                     </motion.div>

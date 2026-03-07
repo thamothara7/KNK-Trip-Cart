@@ -1,54 +1,77 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaMapMarkerAlt, FaClock, FaCalendarAlt, FaUsers, FaCheckCircle } from 'react-icons/fa';
-import { useState } from 'react';
+import { FaMapMarkerAlt, FaClock, FaWhatsapp } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Using dummy data for now
-const dummyPackage = {
+const BACKEND = 'http://localhost:5000';
+
+const fallbackPackage = {
     _id: "1",
-    title: "Mesmerizing Kashmir",
-    destination: "Srinagar, Gulmarg, Pahalgam",
-    duration: "5 Days / 4 Nights",
-    price: 25000,
-    description: "Experience the paradise on earth with our carefully crafted Kashmir tour package including houseboat stays and gondola rides.",
-    images: ["https://images.pexels.com/photos/774570/pexels-photo-774570.jpeg?auto=compress&cs=tinysrgb&w=1200"],
+    title: "Tirupati Balaji Darshan",
+    destination: "Tirupati, Andhra Pradesh",
+    duration: "2 Days / 1 Night",
+    price: 3500,
+    description: "Experience a divine and peaceful darshan of Lord Venkateshwara with our special VIP access package, including comfortable AC transport and special care for seniors.",
+    images: ["https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg?auto=compress&cs=tinysrgb&w=1200"],
     itinerary: [
-        { day: 1, title: "Arrival in Srinagar", description: "Arrive at Srinagar airport, transfer to Houseboat. Evening Shikara ride on Dal Lake." },
-        { day: 2, title: "Srinagar to Gulmarg", description: "Full day excursion to Gulmarg. Enjoy the scenic beauty and Gondola ride (cable car)." },
-        { day: 3, title: "Srinagar to Pahalgam", description: "Drive to Pahalgam (Valley of Shepherds). Enroute visit Saffron fields and Awantipura ruins." },
-        { day: 4, title: "Srinagar Local Sightseeing", description: "Visit Mughal Gardens: Nishat Bagh, Shalimar Bagh, and Shankaracharya Temple." },
-        { day: 5, title: "Departure", description: "Transfer to Srinagar airport for your onward journey with sweet memories." }
+        { day: 1, title: "Departure & Arrival", description: "Depart from Chennai, reach Tirupati. Check into the hotel, evening visit to nearby temples." },
+        { day: 2, title: "VIP Darshan & Return", description: "Early morning VIP darshan at Tirumala, Laddu prasadam, lunch, and return journey." }
     ]
 };
 
 const PackageDetails = () => {
     const { id } = useParams();
-    const pkg = dummyPackage; // In real app: fetch by ID
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', date: '', travelers: 1 });
-    const [submitted, setSubmitted] = useState(false);
+    const [pkg, setPkg] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const handleBooking = (e) => {
-        e.preventDefault();
-        // In real app: axios.post('/api/bookings', formData)
-        setSubmitted(true);
-    };
+    useEffect(() => {
+        const fetchPackage = async () => {
+            try {
+                const res = await axios.get(`${BACKEND}/api/packages/${id}`);
+                setPkg(res.data);
+            } catch {
+                setPkg(fallbackPackage);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPackage();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#fffdf5' }}>
+                <div className="text-center">
+                    <div className="text-5xl mb-4 apple-emoji">🙏</div>
+                    <p className="text-xl font-serif" style={{ color: '#7c2d12' }}>Loading package details...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!pkg) return null;
+
+    const whatsappUrl = `https://wa.me/919629202940?text=Namaste!%20I%20am%20interested%20in%20the%20"${encodeURIComponent(pkg.title)}"%20package.%20Please%20share%20details.`;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-16 transition-colors duration-300">
+        <div className="min-h-screen pt-8 pb-16 transition-colors duration-300" style={{ background: '#fffdf5' }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header Image */}
-                <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-12 shadow-2xl">
-                    <img src={pkg.images[0]} alt={pkg.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <div className="relative h-[350px] md:h-[480px] rounded-3xl overflow-hidden mb-12"
+                    style={{ boxShadow: '0 8px 48px rgba(124,45,18,0.15)', border: '2px solid rgba(251,191,36,0.25)' }}>
+                    <img src={pkg.images?.[0] || fallbackPackage.images[0]} alt={pkg.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0"
+                        style={{ background: 'linear-gradient(to top, rgba(124,45,18,0.85) 0%, rgba(124,45,18,0.2) 50%, transparent 100%)' }} />
                     <div className="absolute bottom-8 left-8 right-8 text-white">
-                        <div className="flex items-center gap-2 mb-3 text-brand-400 font-semibold">
+                        <div className="flex items-center gap-2 mb-3 font-semibold" style={{ color: '#fbbf24' }}>
                             <FaMapMarkerAlt /> {pkg.destination}
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{pkg.title}</h1>
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-white">{pkg.title}</h1>
                         <div className="flex flex-wrap gap-6 text-sm md:text-base">
-                            <span className="flex items-center gap-2"><FaClock /> {pkg.duration}</span>
-                            <span className="flex items-center gap-2 font-bold text-xl">₹{pkg.price.toLocaleString()} / person</span>
+                            <span className="flex items-center gap-2 text-amber-200"><FaClock /> {pkg.duration}</span>
+                            <span className="flex items-center gap-2 font-bold text-xl text-amber-300">₹{pkg.price?.toLocaleString()} / person</span>
                         </div>
                     </div>
                 </div>
@@ -58,85 +81,105 @@ const PackageDetails = () => {
                     <div className="lg:col-span-2 space-y-12">
 
                         {/* Overview */}
-                        <section className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Overview</h2>
-                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg pb-4">
+                        <section className="bg-white p-8 rounded-2xl"
+                            style={{ border: '1.5px solid rgba(251,191,36,0.25)', boxShadow: '0 4px 24px rgba(124,45,18,0.08)' }}>
+                            <h2 className="text-2xl font-serif font-bold mb-4" style={{ color: '#7c2d12' }}>
+                                <span className="apple-emoji">📋</span> Overview
+                            </h2>
+                            <p className="leading-relaxed text-lg pb-4" style={{ color: 'rgba(120,53,15,0.75)' }}>
                                 {pkg.description}
                             </p>
                         </section>
 
                         {/* Itinerary Timeline */}
-                        <section className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h2 className="text-2xl font-bold mb-8 text-gray-900 dark:text-white">Itinerary</h2>
-                            <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 dark:before:via-gray-600 before:to-transparent">
-                                {pkg.itinerary.map((item, index) => (
-                                    <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                        <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-brand-100 text-brand-600 font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                                            {item.day}
-                                        </div>
-                                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-gray-50 dark:bg-gray-700 p-6 rounded-2xl border border-gray-100 dark:border-gray-600 shadow-sm">
-                                            <h4 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{item.title}</h4>
-                                            <p className="text-gray-600 dark:text-gray-300 text-sm">
-                                                {item.description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-
+                        {pkg.itinerary && pkg.itinerary.length > 0 && (
+                            <section className="bg-white p-8 rounded-2xl"
+                                style={{ border: '1.5px solid rgba(251,191,36,0.25)', boxShadow: '0 4px 24px rgba(124,45,18,0.08)' }}>
+                                <h2 className="text-2xl font-serif font-bold mb-8" style={{ color: '#7c2d12' }}>
+                                    <span className="apple-emoji">🗺️</span> Itinerary
+                                </h2>
+                                <div className="space-y-6">
+                                    {pkg.itinerary.map((item, index) => (
+                                        <motion.div
+                                            key={index}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="flex gap-4"
+                                        >
+                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0"
+                                                style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#7c2d12' }}>
+                                                {item.day}
+                                            </div>
+                                            <div className="flex-1 p-5 rounded-2xl"
+                                                style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
+                                                <h4 className="font-bold text-lg mb-2" style={{ color: '#7c2d12' }}>{item.title}</h4>
+                                                <p className="text-sm" style={{ color: 'rgba(120,53,15,0.7)' }}>{item.description}</p>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
                     </div>
 
-                    {/* Sidebar Booking Form */}
+                    {/* Sidebar — Contact CTA */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-24 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Book This Tour</h3>
+                        <div className="sticky top-24 bg-white p-8 rounded-2xl"
+                            style={{ boxShadow: '0 8px 48px rgba(124,45,18,0.12)', border: '2px solid rgba(251,191,36,0.3)' }}>
+                            <h3 className="text-2xl font-serif font-bold mb-2" style={{ color: '#7c2d12' }}>
+                                <span className="apple-emoji">🙏</span> Interested?
+                            </h3>
+                            <p className="text-sm mb-6" style={{ color: 'rgba(120,53,15,0.6)' }}>
+                                Contact us to book this tour or customize it for your needs.
+                            </p>
 
-                            {submitted ? (
-                                <div className="text-center py-8">
-                                    <FaCheckCircle className="text-5xl text-green-500 mx-auto mb-4" />
-                                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Booking Requested!</h4>
-                                    <p className="text-gray-600 dark:text-gray-400">Our team will contact you shortly to confirm dates and payment.</p>
+                            <div className="space-y-4">
+                                {/* Price highlight */}
+                                <div className="p-4 rounded-2xl text-center"
+                                    style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.1))', border: '1px solid rgba(251,191,36,0.3)' }}>
+                                    <p className="text-sm font-semibold" style={{ color: 'rgba(120,53,15,0.6)' }}>Starting from</p>
+                                    <p className="text-3xl font-serif font-bold" style={{ color: '#f59e0b' }}>
+                                        ₹{pkg.price?.toLocaleString()}
+                                    </p>
+                                    <p className="text-xs" style={{ color: 'rgba(120,53,15,0.5)' }}>per person</p>
                                 </div>
-                            ) : (
-                                <form onSubmit={handleBooking} className="space-y-5">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                                        <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-                                        <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
-                                        <input type="tel" required value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-                                            <div className="relative">
-                                                <FaCalendarAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                                <input type="date" required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Travelers</label>
-                                            <div className="relative">
-                                                <FaUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                                <input type="number" min="1" required value={formData.travelers} onChange={e => setFormData({ ...formData, travelers: e.target.value })} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center mb-6">
-                                        <span className="font-semibold text-gray-700 dark:text-gray-300">Total Price</span>
-                                        <span className="text-2xl font-bold text-brand-600 dark:text-brand-400">₹{(pkg.price * formData.travelers).toLocaleString()}</span>
-                                    </div>
-                                    <button type="submit" className="w-full py-4 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg transition-all hover:-translate-y-1">
-                                        Request Booking
-                                    </button>
-                                </form>
-                            )}
+
+                                {/* WhatsApp CTA */}
+                                <motion.a
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-bold text-lg"
+                                    style={{ background: '#25D366', color: '#fff', boxShadow: '0 4px 20px rgba(37,211,102,0.35)' }}
+                                >
+                                    <FaWhatsapp className="text-2xl" />
+                                    Book via WhatsApp
+                                </motion.a>
+
+                                {/* Call CTA */}
+                                <motion.a
+                                    href="tel:+919629202940"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-bold text-lg"
+                                    style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#7c2d12', boxShadow: '0 4px 20px rgba(251,191,36,0.4)' }}
+                                >
+                                    <span className="apple-emoji">📞</span> Call Us Now
+                                </motion.a>
+
+                                {/* Back to packages */}
+                                <Link
+                                    to="/packages"
+                                    className="block text-center py-3 rounded-2xl font-semibold text-sm transition-all hover:bg-amber-50"
+                                    style={{ color: 'rgba(120,53,15,0.6)', border: '1.5px solid rgba(251,191,36,0.3)' }}
+                                >
+                                    ← Back to All Packages
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

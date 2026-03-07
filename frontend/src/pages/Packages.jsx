@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 import PackageCard from '../components/PackageCard';
+
+const BACKEND = 'http://localhost:5000';
 
 const dummyPackages = [
     {
@@ -68,15 +71,35 @@ const dummyPackages = [
 const categories = ['All', 'South India Tours', 'North India Tours', 'Hills Trip', 'One Day Trip'];
 
 const Packages = () => {
-    const [packages] = useState(dummyPackages);
+    const [packages, setPackages] = useState([]);
     const [filter, setFilter] = useState('All');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPackages = async () => {
+            try {
+                const res = await axios.get(`${BACKEND}/api/packages`);
+                if (res.data && res.data.length > 0) {
+                    setPackages(res.data);
+                } else {
+                    setPackages(dummyPackages);
+                }
+            } catch {
+                // Fallback to dummy packages if backend is offline
+                setPackages(dummyPackages);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPackages();
+    }, []);
 
     const filteredPackages = filter === 'All'
         ? packages
         : packages.filter(pkg => pkg.category === filter);
 
     return (
-        <div className="min-h-screen bg-cream dark:bg-gray-900 pt-8 pb-16 transition-colors duration-300">
+        <div className="min-h-screen bg-cream pt-8 pb-16 transition-colors duration-300">
             {/* Header */}
             <div className="bg-gradient-to-r from-maroon via-maroon/90 to-maroon py-20 mb-12 relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10">
@@ -124,7 +147,7 @@ const Packages = () => {
                             onClick={() => setFilter(type)}
                             className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 tracking-wide ${filter === type
                                 ? 'bg-saffron text-white shadow-lg shadow-saffron/30'
-                                : 'bg-white dark:bg-gray-800 text-maroon dark:text-cream hover:bg-gold/10 border border-gold/30'
+                                : 'bg-white text-maroon hover:bg-gold/10 border border-gold/30'
                                 }`}
                         >
                             {type}
@@ -132,20 +155,30 @@ const Packages = () => {
                     ))}
                 </motion.div>
 
-                {/* Grid */}
-                <motion.div
-                    layout
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                >
-                    {filteredPackages.map((pkg) => (
-                        <PackageCard key={pkg._id} pkg={pkg} />
-                    ))}
-                </motion.div>
-
-                {filteredPackages.length === 0 && (
-                    <div className="text-center py-16 text-maroon/50 dark:text-cream/50">
-                        <p className="text-xl font-serif">No packages found for this category.</p>
+                {/* Loading */}
+                {loading ? (
+                    <div className="text-center py-16">
+                        <div className="text-5xl mb-4 apple-emoji">🙏</div>
+                        <p className="text-xl font-serif text-maroon/50">Loading packages...</p>
                     </div>
+                ) : (
+                    <>
+                        {/* Grid */}
+                        <motion.div
+                            layout
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                        >
+                            {filteredPackages.map((pkg) => (
+                                <PackageCard key={pkg._id} pkg={pkg} />
+                            ))}
+                        </motion.div>
+
+                        {filteredPackages.length === 0 && (
+                            <div className="text-center py-16 text-maroon/50">
+                                <p className="text-xl font-serif">No packages found for this category.</p>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>
