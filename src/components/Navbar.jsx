@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBars, FaTimes, FaPhone } from 'react-icons/fa';
-import knkLogo from '../assets/file_000000009b94720784d2ef29a08ad1c8.png';
+import knkLogo from '../assets/Gemini_Generated_Image_vvyvj2vvyvj2vvyv-Photoroom.png';
 
 const navLinks = [
     { to: '/', label: 'Home' },
