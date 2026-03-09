@@ -121,7 +121,7 @@ const WhyChooseUs = () => {
                     {[
                         { num: '5+', label: 'YEARS experience' },
                         { num: '50+', label: 'Destinations Covered' },
-                        { num: '1000+', label: 'Happy Pilgrims' },
+                        { num: '500+', label: 'Happy Pilgrims' },
                     ].map((stat) => (
                         <div key={stat.label} className="text-center">
                             <div className="text-4xl md:text-5xl font-serif font-bold text-amber-300 mb-2">

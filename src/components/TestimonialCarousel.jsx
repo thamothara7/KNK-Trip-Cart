@@ -1,56 +1,31 @@
 "use client";
-/* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
-import { FaStar, FaQuoteLeft } from 'react-icons/fa';
+import { FaStar, FaQuoteLeft, FaUser } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { getTestimonials } from '../lib/actions';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-const testimonials = [
-    {
-        id: 1,
-        name: "Lakshmi Devi",
-        rating: 5,
-        content: "The Tirupati darshan was beautifully arranged. They took special care of my elderly mother throughout the journey. Truly blessed experience!",
-        role: "Family Pilgrimage",
-        avatar: "LD",
-    },
-    {
-        id: 2,
-        name: "Ravi Krishnan",
-        rating: 5,
-        content: "Our Kasi Vishwanath Yatra was a life-changing experience. The Ganga Aarti arrangements were perfect. KNK Trip Cart made everything seamless.",
-        role: "Spiritual Yatra",
-        avatar: "RK",
-    },
-    {
-        id: 3,
-        name: "Sundaram & Family",
-        rating: 5,
-        content: "The Ooty hills trip was wonderful! Clean transport, good food, and excellent guides. Best travel agency we've ever used. Highly recommended!",
-        role: "Hills Trip",
-        avatar: "SF",
-    },
-    {
-        id: 4,
-        name: "Meenakshi Ammal",
-        rating: 5,
-        content: "As a senior citizen, I was worried about the long journey. But KNK Trip Cart took exceptional care. They are truly like family. Om Sai Ram!",
-        role: "Senior Traveler",
-        avatar: "MA",
-    },
-    {
-        id: 5,
-        name: "Ganesh Kumar",
-        rating: 5,
-        content: "The Rameswaram package was excellent. Very comfortable and well-organized. The holy bath arrangements were wonderful. Highly recommend!",
-        role: "Pilgrimage",
-        avatar: "GK",
-    },
-];
-
 const TestimonialCarousel = () => {
+    const [testimonials, setTestimonials] = useState([]);
+
+    useEffect(() => {
+        const fetchTestimonials = async () => {
+            try {
+                const data = await getTestimonials();
+                if (data && data.length > 0) {
+                    setTestimonials(data);
+                }
+            } catch (err) {
+                console.error("Failed to load testimonials for home page", err);
+            }
+        };
+        fetchTestimonials();
+    }, []);
+
+    if (testimonials.length === 0) return null;
     return (
         <section className="py-24 mandala-bg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1"
@@ -68,7 +43,7 @@ const TestimonialCarousel = () => {
                         Blessed Traveler Voices
                     </h2>
                     <div className="golden-divider">
-                        
+
                     </div>
                 </motion.div>
 
@@ -86,7 +61,7 @@ const TestimonialCarousel = () => {
                     className="pb-16"
                 >
                     {testimonials.map((t) => (
-                        <SwiperSlide key={t.id}>
+                        <SwiperSlide key={t._id || t.id}>
                             <div className="bg-white rounded-2xl p-8 h-full flex flex-col"
                                 style={{
                                     border: '1px solid rgba(217,119,6,0.2)',
@@ -94,7 +69,7 @@ const TestimonialCarousel = () => {
                                 }}>
                                 {/* Stars */}
                                 <div className="flex gap-1 text-amber-400 text-xl mb-4">
-                                    {[...Array(t.rating)].map((_, i) => (
+                                    {[...Array(t.rating || 5)].map((_, i) => (
                                         <FaStar key={i} />
                                     ))}
                                 </div>
@@ -102,17 +77,23 @@ const TestimonialCarousel = () => {
                                 <FaQuoteLeft className="text-3xl text-amber-400/30 mb-4" />
 
                                 <p className="text-maroon/80 flex-grow italic leading-relaxed text-lg mb-8">
-                                    "{t.content}"
+                                    "{t.review || t.content}"
                                 </p>
 
                                 <div className="flex items-center gap-4 pt-4 border-t border-amber-100">
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm font-serif shrink-0"
-                                        style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
-                                        {t.avatar}
-                                    </div>
+                                    {t.imageUrl ? (
+                                        <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-amber-400">
+                                            <img src={t.imageUrl} alt={t.name} className="w-full h-full object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm font-serif shrink-0 border-2 border-amber-400"
+                                            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                                            {t.avatar || <FaUser />}
+                                        </div>
+                                    )}
                                     <div>
                                         <h4 className="font-serif font-bold text-maroon text-lg">{t.name}</h4>
-                                        <span className="text-sm text-amber-600 font-semibold">{t.role}</span>
+                                        <span className="text-sm text-amber-600 font-semibold">{t.role || 'Blessed Traveler'}</span>
                                     </div>
                                 </div>
                             </div>

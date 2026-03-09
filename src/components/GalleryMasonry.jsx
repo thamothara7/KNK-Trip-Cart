@@ -1,18 +1,8 @@
 "use client";
-/* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
 import Masonry from 'react-masonry-css';
 import { motion } from 'framer-motion';
-
-const images = [
-    { src: "https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Meenakshi Temple" },
-    { src: "https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Varanasi Ghats" },
-    { src: "https://images.pexels.com/photos/2387871/pexels-photo-2387871.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Kanchipuram Temple" },
-    { src: "https://images.pexels.com/photos/1603650/pexels-photo-1603650.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Kedarnath" },
-    { src: "https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Rameswaram Temple" },
-    { src: "https://images.pexels.com/photos/2104882/pexels-photo-2104882.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Ooty Hills" },
-    { src: "https://images.pexels.com/photos/3522880/pexels-photo-3522880.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "Sacred Shrine" },
-    { src: "https://images.pexels.com/photos/1007431/pexels-photo-1007431.jpeg?auto=compress&cs=tinysrgb&w=1200", label: "River Ganga" },
-];
+import { getGallery } from '../lib/actions';
 
 const breakpointColumnsObj = {
     default: 3,
@@ -22,6 +12,23 @@ const breakpointColumnsObj = {
 };
 
 const GalleryMasonry = () => {
+    const [images, setImages] = useState([]);
+
+    useEffect(() => {
+        const fetchGallery = async () => {
+            try {
+                const data = await getGallery();
+                if (data && data.length > 0) {
+                    setImages(data);
+                }
+            } catch (err) {
+                console.error("Failed to load gallery for home page", err);
+            }
+        };
+        fetchGallery();
+    }, []);
+
+    if (images.length === 0) return null;
     return (
         <section className="py-24 golden-bg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1"
@@ -39,7 +46,7 @@ const GalleryMasonry = () => {
                         Divine Destinations Gallery
                     </h2>
                     <div className="golden-divider">
-                        
+
                     </div>
                 </motion.div>
 
@@ -50,7 +57,7 @@ const GalleryMasonry = () => {
                 >
                     {images.map((img, index) => (
                         <motion.div
-                            key={index}
+                            key={img._id || index}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
@@ -69,12 +76,12 @@ const GalleryMasonry = () => {
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-end justify-center pb-6"
                                 style={{ background: 'linear-gradient(to top, rgba(124,45,18,0.85), transparent)' }}>
                                 <span className="text-amber-300 font-serif font-bold text-lg tracking-wide">
-                                    {img.label}
+                                    {img.title || img.category || img.label}
                                 </span>
                             </div>
                             <img
-                                src={img.src}
-                                alt={img.label}
+                                src={img.imageUrl || img.src}
+                                alt={img.title || img.label}
                                 className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
                                 loading="lazy"
                             />

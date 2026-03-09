@@ -1,37 +1,28 @@
 "use client";
-/* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-
-const destinations = [
-    {
-        name: 'Tirupati',
-        description: 'Lord Venkateshwara – Andhra Pradesh',
-        img: 'https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg?auto=compress&cs=tinysrgb&w=800',
-    },
-    {
-        name: 'Rameswaram',
-        description: 'Ramanathaswamy Temple – Tamil Nadu',
-        img: 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=800',
-    },
-    {
-        name: 'Kasi',
-        description: 'Kashi Vishwanath – Varanasi, UP',
-        img: 'https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg?auto=compress&cs=tinysrgb&w=800',
-    },
-    {
-        name: 'Kedarnath',
-        description: 'Kedarnath Dham – Uttarakhand',
-        img: 'https://images.pexels.com/photos/1603650/pexels-photo-1603650.jpeg?auto=compress&cs=tinysrgb&w=800',
-    },
-    {
-        name: 'Shirdi',
-        description: 'Sai Baba Temple – Maharashtra',
-        img: 'https://images.pexels.com/photos/3522880/pexels-photo-3522880.jpeg?auto=compress&cs=tinysrgb&w=800',
-    },
-];
+import { getPackages } from '../lib/actions';
 
 const PilgrimageDestinations = () => {
+    const [destinations, setDestinations] = useState([]);
+
+    useEffect(() => {
+        const fetchDestinations = async () => {
+            try {
+                const pkgs = await getPackages();
+                if (pkgs && pkgs.length > 0) {
+                    setDestinations(pkgs.slice(0, 5));
+                }
+            } catch (err) {
+                console.error("Failed to load packages for home page", err);
+            }
+        };
+        fetchDestinations();
+    }, []);
+
+    if (destinations.length === 0) return null;
+
     return (
         <section className="py-24 mandala-bg relative overflow-hidden">
             {/* Decorative top golden bar */}
@@ -64,7 +55,7 @@ const PilgrimageDestinations = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     {destinations.map((dest, i) => (
                         <motion.div
-                            key={dest.name}
+                            key={dest._id || dest.name}
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
@@ -88,8 +79,8 @@ const PilgrimageDestinations = () => {
                             {/* Image */}
                             <div className="h-64 overflow-hidden">
                                 <img
-                                    src={dest.img}
-                                    alt={dest.name}
+                                    src={dest.imageUrl || dest.img}
+                                    alt={dest.title || dest.name}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-115"
                                 />
                             </div>
@@ -98,9 +89,9 @@ const PilgrimageDestinations = () => {
                             <div className="absolute inset-0 flex flex-col justify-end p-5"
                                 style={{ background: 'linear-gradient(to top, rgba(124,45,18,0.95) 0%, rgba(124,45,18,0.4) 55%, transparent 100%)' }}>
                                 <h3 className="text-2xl font-serif font-bold text-amber-300 mb-1">
-                                    {dest.name}
+                                    {dest.title || dest.name}
                                 </h3>
-                                <p className="text-amber-100/80 text-sm mb-4">{dest.description}</p>
+                                <p className="text-amber-100/80 text-sm mb-4">{dest.duration || dest.description}</p>
                                 <Link
                                     href="/packages"
                                     className="block text-center py-3 px-4 rounded-xl font-bold text-base text-maroon transition-all duration-300 hover:scale-105"

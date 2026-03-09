@@ -3,6 +3,7 @@
 import { connectToDatabase } from './mongodb';
 import Package from './models/Package';
 import Gallery from './models/Gallery';
+import Testimonial from './models/Testimonial';
 import { revalidatePath } from 'next/cache';
 
 // Package Actions
@@ -62,5 +63,34 @@ export async function deleteGalleryItem(id) {
     await Gallery.findByIdAndDelete(id);
     revalidatePath('/admin');
     revalidatePath('/gallery');
+    return { success: true };
+}
+
+// Testimonial Actions
+export async function getTestimonials() {
+    await connectToDatabase();
+    const testimonials = await Testimonial.find({}).sort({ createdAt: -1 }).lean();
+    return JSON.parse(JSON.stringify(testimonials));
+}
+
+export async function createTestimonial(data) {
+    try {
+        console.log("Saving Testimonial Data:", { ...data, imageUrl: data.imageUrl ? data.imageUrl.substring(0, 50) + '...' : 'none' });
+        await connectToDatabase();
+        const newTestimonial = await Testimonial.create(data);
+        revalidatePath('/admin');
+        revalidatePath('/'); // assuming testimonials are shown on home page
+        return JSON.parse(JSON.stringify(newTestimonial));
+    } catch (error) {
+        console.error("Error creating testimonial:", error);
+        throw new Error(error.message || "Failed to create testimonial");
+    }
+}
+
+export async function deleteTestimonial(id) {
+    await connectToDatabase();
+    await Testimonial.findByIdAndDelete(id);
+    revalidatePath('/admin');
+    revalidatePath('/');
     return { success: true };
 }

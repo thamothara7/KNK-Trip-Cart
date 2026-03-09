@@ -25,7 +25,8 @@ const HeroSection = () => {
                 <img
                     src={heroBg.src}
                     alt="Sacred Indian Temple"
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-full object-cover"
+                    
                 />
                 <div
                     className="absolute inset-0"

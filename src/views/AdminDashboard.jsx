@@ -1,50 +1,35 @@
 "use client";
-/* eslint-disable no-unused-vars */
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTrash, FaEdit, FaPlus, FaTimes, FaCheck, FaCloudUploadAlt, FaLink, FaImage, FaBox } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaPlus, FaTimes, FaCheck, FaLink, FaBox, FaImage, FaSignOutAlt, FaStar } from 'react-icons/fa';
 import GalleryManager from './GalleryManager';
-
+import TestimonialManager from './TestimonialManager';
 import { getPackages, createPackage, updatePackage, deletePackage } from '../lib/actions';
+
 const CATEGORIES = ['South India Tours', 'North India Tours', 'Hills Trip', 'One Day Trip', 'Char Dham Yatra'];
 
 const emptyForm = {
     title: '', destination: '', duration: '',
     category: 'South India Tours', price: '', description: '',
-    imageUrl: '', imagePreview: '', uploadedFilename: '',
-};
-
-/* ─ tiny upload status component ─ */
-const UploadStatus = ({ state }) => {
-    if (!state) return null;
-    const map = {
-        uploading: { text: 'Uploading…', color: '#f59e0b', bg: 'rgba(251,191,36,0.1)' },
-        success: { text: ' Upload complete', color: '#16a34a', bg: 'rgba(22,163,74,0.1)' },
-        error: { text: ' Upload failed. Using URL mode.', color: '#dc2626', bg: 'rgba(220,38,38,0.1)' },
-        offline: { text: ' Backend offline — using URL link instead.', color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
-    };
-    const s = map[state] || {};
-    return (
-        <div className="mt-2 px-3 py-2 rounded-xl text-sm font-semibold" style={{ color: s.color, background: s.bg }}>
-            {s.text}
-        </div>
-    );
+    imageUrl: '', imagePreview: ''
 };
 
 const AdminDashboard = () => {
     const [authed, setAuthed] = useState(false);
     const [loginData, setLoginData] = useState({ username: '', password: '' });
+
+    // Core state
     const [packages, setPackages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState('packages'); // packages | gallery
+
+    // Form state
     const [form, setForm] = useState(emptyForm);
     const [showForm, setShowForm] = useState(false);
     const [editId, setEditId] = useState(null);
     const [saved, setSaved] = useState(false);
-    const [uploadState, setUploadState] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('packages'); // 'packages' | 'gallery'
-    const fileInputRef = useRef(null);
 
-    /* ── Fetch packages from MongoDB ──────────────── */
+    // Initial Fetch
     const fetchPackages = async () => {
         setLoading(true);
         try {
@@ -62,45 +47,40 @@ const AdminDashboard = () => {
         if (authed) fetchPackages();
     }, [authed]);
 
-    /* ── Auth ─────────────────────────────────────────── */
+    // Auth
     const handleLogin = (e) => {
         e.preventDefault();
         if (loginData.username === 'admin' && loginData.password === 'knk@2024') setAuthed(true);
-        else alert(' Wrong credentials.\nUse: admin / knk@2024');
+        else alert('Wrong credentials. Use: admin / knk@2024');
     };
 
-    /* ── Image: upload file to backend ───────────────── */
-    const handleImageFile = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => setForm(f => ({ ...f, imagePreview: ev.target.result }));
-        reader.readAsDataURL(file);
-
-        setUploadState('uploading');
-        const data = new FormData();
-        data.append('image', file);
-        try {
-            const res = await fetch(`/api/upload`, { method: 'POST', body: data });
-            if (!res.ok) throw new Error('Server error');
-            const json = await res.json();
-            setForm(f => ({ ...f, imageUrl: json.url, imagePreview: json.url, uploadedFilename: json.filename }));
-            setUploadState('success');
-        } catch (err) {
-            if (err.message?.includes('fetch') || err.name === 'TypeError') setUploadState('offline');
-            else setUploadState('error');
-        }
-    };
-
+    // Images (URL or Base64 strictly)
     const handleImageUrl = (e) => {
         const val = e.target.value;
-        setForm(f => ({ ...f, imageUrl: val, imagePreview: val, uploadedFilename: '' }));
-        setUploadState(null);
+        setForm(f => ({ ...f, imageUrl: val, imagePreview: val }));
     };
 
-    /* ── Save package (MongoDB) ──────────────────────── */
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert("File is too large! Please select an image under 2MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result;
+            setForm(f => ({ ...f, imageUrl: base64String, imagePreview: base64String }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Form submission
     const handleSave = async (e) => {
         e.preventDefault();
+
         const pkgData = {
             title: form.title.trim(),
             destination: form.destination.trim(),
@@ -111,7 +91,6 @@ const AdminDashboard = () => {
             images: [form.imageUrl || form.imagePreview || ''],
         };
 
-        // Frontend validation
         if (!pkgData.title || !pkgData.destination || !pkgData.duration || !pkgData.price || !pkgData.description) {
             alert('Please fill all required fields: Title, Destination, Duration, Price, and Description.');
             return;
@@ -123,150 +102,167 @@ const AdminDashboard = () => {
             } else {
                 await createPackage(pkgData);
             }
+
             await fetchPackages();
-            setForm(emptyForm); setShowForm(false); setEditId(null);
-            setUploadState(null);
+            setForm(emptyForm);
+            setShowForm(false);
+            setEditId(null);
+
             setSaved(true);
             setTimeout(() => setSaved(false), 2500);
         } catch (err) {
             console.error('Save error:', err);
-            if (err?.code === 'ERR_NETWORK' || err?.message === 'Network Error') {
-                alert('Cannot reach the backend server.\n\nPlease open a terminal and run:\n  cd "/Users/Thamothara/Sai Shiva Tours/backend"\n  node server.js');
-            } else {
-                const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'Unknown error';
-                alert(`Failed to save package.\n\nServer said: ${msg}`);
-            }
+            alert('Failed to save package. Check server connection.');
         }
     };
 
-    /* ── Edit ─────────────────────────────────────────── */
+    // Edit Initialization
     const startEdit = (pkg) => {
         setForm({
             title: pkg.title, destination: pkg.destination,
             duration: pkg.duration, category: pkg.category,
             price: pkg.price, description: pkg.description,
-            imageUrl: pkg.images?.[0] || '', imagePreview: pkg.images?.[0] || '',
-            uploadedFilename: '',
+            imageUrl: pkg.images?.[0] || '', imagePreview: pkg.images?.[0] || ''
         });
-        setEditId(pkg._id); setShowForm(true); setUploadState(null);
+        setEditId(pkg._id);
+        setShowForm(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    /* ── Delete ───────────────────────────────────────── */
+    // Deletion
     const handleDelete = async (pkg) => {
-        if (!window.confirm(` Delete "${pkg.title}"?`)) return;
+        if (!window.confirm(`Delete "${pkg.title}"? This cannot be undone.`)) return;
         try {
-            // Delete image from server if hosted locally
-            if (pkg.images?.[0]?.includes('/uploads/')) {
-                // Ignore API delete
-            }
             await deletePackage(pkg._id);
             await fetchPackages();
         } catch {
-            alert(' Failed to delete. Make sure the backend server is running.');
+            alert('Failed to delete package.');
         }
     };
 
-    /* ── Login screen ─────────────────────────────────── */
-    if (!authed) return (
-        <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#fffdf5' }}>
-            <motion.div
-                initial={{ opacity: 0, y: 32, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="bg-white rounded-3xl p-10 w-full max-w-md"
-                style={{ boxShadow: '0 8px 48px rgba(120,53,15,0.15)', border: '2px solid rgba(251,191,36,0.25)' }}
-            >
-                <div className="text-center mb-8">
-
-                    <h2 className="text-3xl font-serif font-bold" style={{ color: '#7c2d12' }}>Admin Access</h2>
-                    <p className="text-sm mt-1" style={{ color: 'rgba(120,53,15,0.55)' }}>KNK Trip Cart Dashboard</p>
-                </div>
-                <form onSubmit={handleLogin} className="space-y-5">
-                    {[{ label: 'Username', key: 'username', type: 'text', ph: 'admin' },
-                    { label: 'Password', key: 'password', type: 'password', ph: '••••••••' }].map(f => (
-                        <div key={f.key}>
-                            <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(120,53,15,0.65)' }}>{f.label}</label>
-                            <input type={f.type} placeholder={f.ph} required
-                                value={loginData[f.key]}
-                                onChange={e => setLoginData(d => ({ ...d, [f.key]: e.target.value }))}
-                                className="w-full px-5 py-4 rounded-xl border text-lg outline-none transition-all"
-                                style={{ borderColor: 'rgba(251,191,36,0.4)', background: '#fffdf5', color: '#7c2d12' }}
-                            />
-                        </div>
-                    ))}
-                    <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                        className="w-full py-4 font-bold text-lg rounded-xl"
-                        style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#7c2d12', boxShadow: '0 4px 20px rgba(251,191,36,0.4)' }}>
-                        Login to Dashboard
-                    </motion.button>
-                    <p className="text-center text-xs" style={{ color: 'rgba(120,53,15,0.45)' }}>Default: admin / knk@2024</p>
-                </form>
-            </motion.div>
-        </div>
-    );
-
-    /* ── Dashboard ────────────────────────────────────── */
-    return (
-        <div className="min-h-screen pb-16 pt-4 px-4" style={{ background: '#fffdf5' }}>
-            <div className="max-w-5xl mx-auto">
-
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pt-6">
-                    <div>
-                        <h1 className="text-3xl font-serif font-bold" style={{ color: '#7c2d12' }}>
-                            Admin Dashboard
-                        </h1>
-                        <p className="text-sm mt-1" style={{ color: 'rgba(120,53,15,0.55)' }}>
-                            Manage Packages and Gallery Images
-                        </p>
+    // --- Login Screen ---
+    if (!authed) {
+        return (
+            <div className="min-h-screen flex items-center justify-center px-4 bg-cream">
+                <motion.div
+                    initial={{ opacity: 0, y: 32, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="bg-white rounded-3xl p-8 sm:p-10 w-full max-w-md border-2 border-amber-300/40 shadow-2xl shadow-maroon/5"
+                >
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-serif font-bold text-maroon">Admin Access</h2>
+                        <p className="text-sm mt-2 text-maroon/60">KNK Trip Cart secured dashboard</p>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-maroon/70">Username</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={loginData.username}
+                                    onChange={e => setLoginData(d => ({ ...d, username: e.target.value }))}
+                                    className="w-full px-5 py-4 rounded-xl border border-amber-200 bg-amber-50/30 text-maroon outline-none focus:border-amber-400 focus:bg-white transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-maroon/70">Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={loginData.password}
+                                    onChange={e => setLoginData(d => ({ ...d, password: e.target.value }))}
+                                    className="w-full px-5 py-4 rounded-xl border border-amber-200 bg-amber-50/30 text-maroon outline-none focus:border-amber-400 focus:bg-white transition-all"
+                                />
+                            </div>
+                        </div>
+                        <motion.button
+                            type="submit"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full py-4 mt-2 font-bold text-lg rounded-xl text-maroon bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg shadow-amber-500/20"
+                        >
+                            Log In
+                        </motion.button>
+                        <p className="text-center text-xs text-maroon/40 pt-2">Default: admin / knk@2024</p>
+                    </form>
+                </motion.div>
+            </div>
+        );
+    }
+
+    // --- Main Dashboard ---
+    return (
+        <div className="min-h-screen pb-20 pt-10 px-4 sm:px-6 lg:px-8 bg-cream">
+            <div className="max-w-6xl mx-auto">
+
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                    <div>
+                        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-maroon">Dashboard</h1>
+                        <p className="text-sm sm:text-base mt-2 text-maroon/60">Manage your packages, tours, and gallery collections.</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 self-stretch md:self-auto">
                         <AnimatePresence>
                             {saved && (
-                                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-green-800 font-semibold text-sm"
-                                    style={{ background: '#dcfce7' }}>
-                                    <FaCheck /> Saved!
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9, x: 20 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"
+                                >
+                                    <FaCheck /> Saved
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        <motion.button
-                            onClick={() => { setShowForm(!showForm); setEditId(null); setForm(emptyForm); setUploadState(null); }}
-                            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                            className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-base"
-                            style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#7c2d12', boxShadow: '0 4px 16px rgba(251,191,36,0.4)' }}>
-                            {showForm ? <><FaTimes /> Cancel</> : <><FaPlus /> Add Package</>}
-                        </motion.button>
-                        <button onClick={() => setAuthed(false)}
-                            className="px-4 py-3 rounded-full font-semibold text-sm border transition-all"
-                            style={{ color: 'rgba(120,53,15,0.6)', borderColor: 'rgba(251,191,36,0.4)' }}>
-                            Logout
+
+                        {activeTab === 'packages' && (
+                            <motion.button
+                                onClick={() => { setShowForm(!showForm); setEditId(null); setForm(emptyForm); }}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold text-sm sm:text-base text-maroon bg-gradient-to-r from-amber-400 to-amber-500 shadow-md shadow-amber-500/20"
+                            >
+                                {showForm ? <><FaTimes /> Close Form</> : <><FaPlus /> Add Package</>}
+                            </motion.button>
+                        )}
+
+                        <button
+                            onClick={() => setAuthed(false)}
+                            className="flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm text-maroon/70 border-2 border-maroon/10 hover:bg-maroon/5 transition-all"
+                        >
+                            <FaSignOutAlt /> <span className="hidden sm:inline">Logout</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Backend info */}
-                <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-                    <div className="flex items-center gap-4 border-b-2" style={{ borderColor: 'rgba(251,191,36,0.3)' }}>
-                        <button onClick={() => setActiveTab('packages')} className={`pb-2 px-4 font-bold text-lg flex items-center gap-2 ${activeTab === 'packages' ? 'border-b-4 border-amber-500 text-amber-600' : 'text-stone-500'}`}>
-                            <FaBox /> Packages
-                        </button>
-                        <button onClick={() => setActiveTab('gallery')} className={`pb-2 px-4 font-bold text-lg flex items-center gap-2 ${activeTab === 'gallery' ? 'border-b-4 border-amber-500 text-amber-600' : 'text-stone-500'}`}>
-                            <FaImage /> Gallery
-                        </button>
-                    </div>
-
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm"
-                        style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)' }}>
-                        <span style={{ color: 'rgba(120,53,15,0.7)' }}>
-                            Images upload to <strong style={{ color: '#7c2d12' }}>localhost:5000/uploads</strong>
-                        </span>
-                    </div>
+                {/* Tabs */}
+                <div className="flex items-center gap-2 sm:gap-6 border-b-2 border-amber-500/20 mb-8 overflow-x-auto hide-scrollbar">
+                    <button
+                        onClick={() => setActiveTab('packages')}
+                        className={`pb-3 px-2 sm:px-4 font-bold text-base sm:text-lg flex items-center gap-2 whitespace-nowrap transition-all ${activeTab === 'packages' ? 'border-b-4 border-amber-500 text-amber-600' : 'text-maroon/50 hover:text-maroon/70'}`}
+                    >
+                        <FaBox /> Manage Packages
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('gallery')}
+                        className={`pb-3 px-2 sm:px-4 font-bold text-base sm:text-lg flex items-center gap-2 whitespace-nowrap transition-all ${activeTab === 'gallery' ? 'border-b-4 border-amber-500 text-amber-600' : 'text-maroon/50 hover:text-maroon/70'}`}
+                    >
+                        <FaImage /> Photo Gallery
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('testimonials')}
+                        className={`pb-3 px-2 sm:px-4 font-bold text-base sm:text-lg flex items-center gap-2 whitespace-nowrap transition-all ${activeTab === 'testimonials' ? 'border-b-4 border-amber-500 text-amber-600' : 'text-maroon/50 hover:text-maroon/70'}`}
+                    >
+                        <FaStar /> Testimonials
+                    </button>
                 </div>
 
+                {/* --- Packages Tab Content --- */}
                 {activeTab === 'packages' ? (
                     <>
-                        {/* ── Add / Edit Form ──────────────────────────── */}
+                        {/* Package Form */}
                         <AnimatePresence>
                             {showForm && (
                                 <motion.form
@@ -274,129 +270,127 @@ const AdminDashboard = () => {
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
                                     onSubmit={handleSave}
-                                    className="bg-white rounded-3xl p-8 mb-8 overflow-hidden"
-                                    style={{ border: '2px solid rgba(251,191,36,0.35)', boxShadow: '0 4px 32px rgba(120,53,15,0.1)' }}
+                                    className="bg-white rounded-3xl p-6 sm:p-8 mb-10 border-2 border-amber-200/60 shadow-xl shadow-maroon/5 overflow-hidden"
                                 >
-                                    <h3 className="text-2xl font-serif font-bold mb-6" style={{ color: '#7c2d12' }}>
-                                        {editId ? (<> Edit Package</>) : (<> Add New Package</>)}
+                                    <h3 className="text-2xl font-serif font-bold mb-6 text-maroon">
+                                        {editId ? 'Edit Tour Package' : 'Create New Package'}
                                     </h3>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                                         {[
-                                            { label: ' Package Title', key: 'title', ph: 'e.g. Tirupati Balaji Darshan' },
-                                            { label: ' Destination', key: 'destination', ph: 'e.g. Tirupati, Andhra Pradesh' },
-                                            { label: ' Duration', key: 'duration', ph: 'e.g. 2 Days / 1 Night' },
-                                            { label: ' Price (₹)', key: 'price', ph: 'e.g. 3500', type: 'number' },
+                                            { label: 'Package Title', key: 'title', ph: 'e.g. Tirupati Balaji Darshan' },
+                                            { label: 'Destination', key: 'destination', ph: 'e.g. Tirupati, Andhra Pradesh' },
+                                            { label: 'Duration', key: 'duration', ph: 'e.g. 2 Days / 1 Night' },
+                                            { label: 'Price (₹)', key: 'price', ph: 'e.g. 3500', type: 'number' },
                                         ].map(field => (
                                             <div key={field.key}>
-                                                <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(120,53,15,0.65)' }}>
-                                                    {field.label.split(' ').slice(1).join(' ')}
-                                                </label>
-                                                <input type={field.type || 'text'} required placeholder={field.ph}
+                                                <label className="block text-sm font-semibold mb-2 text-maroon/70">{field.label}</label>
+                                                <input
+                                                    type={field.type || 'text'}
+                                                    required
+                                                    placeholder={field.ph}
                                                     value={form[field.key]}
                                                     onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
-                                                    className="w-full px-4 py-3.5 rounded-xl border text-base outline-none transition-all"
-                                                    style={{ borderColor: 'rgba(251,191,36,0.4)', background: '#fffdf5', color: '#7c2d12' }}
+                                                    className="w-full px-4 py-3.5 rounded-xl border border-amber-200 bg-cream text-maroon outline-none focus:border-amber-400 focus:bg-white transition-all text-sm sm:text-base"
                                                 />
                                             </div>
                                         ))}
-                                        <div>
-                                            <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(120,53,15,0.65)' }}>
-                                                Category
-                                            </label>
-                                            <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                                                className="w-full px-4 py-3.5 rounded-xl border text-base outline-none transition-all"
-                                                style={{ borderColor: 'rgba(251,191,36,0.4)', background: '#fffdf5', color: '#7c2d12' }}>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-semibold mb-2 text-maroon/70">Category Segment</label>
+                                            <select
+                                                value={form.category}
+                                                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                                                className="w-full px-4 py-3.5 rounded-xl border border-amber-200 bg-cream text-maroon outline-none focus:border-amber-400 focus:bg-white transition-all font-semibold"
+                                            >
                                                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                                             </select>
                                         </div>
                                     </div>
 
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(120,53,15,0.65)' }}>
-                                            Description
-                                        </label>
-                                        <textarea required rows="3" placeholder="Short description of the package…"
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-semibold mb-2 text-maroon/70">Detailed Description</label>
+                                        <textarea
+                                            required
+                                            rows="4"
+                                            placeholder="Write a descriptive summary of the tour..."
                                             value={form.description}
                                             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                                            className="w-full px-4 py-3.5 rounded-xl border text-base outline-none transition-all resize-none"
-                                            style={{ borderColor: 'rgba(251,191,36,0.4)', background: '#fffdf5', color: '#7c2d12' }}
+                                            className="w-full px-4 py-3.5 rounded-xl border border-amber-200 bg-cream text-maroon outline-none focus:border-amber-400 focus:bg-white transition-all resize-none text-sm sm:text-base"
                                         />
                                     </div>
 
-                                    {/* ─── Image Section ─── */}
-                                    <div className="mb-6 p-5 rounded-2xl"
-                                        style={{ background: 'rgba(251,191,36,0.06)', border: '1.5px dashed rgba(251,191,36,0.5)' }}>
-                                        <p className="font-serif font-bold text-lg mb-4" style={{ color: '#7c2d12' }}>
-                                            Package Image
-                                        </p>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                                            {/* File upload */}
-                                            <div>
-                                                <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(120,53,15,0.65)' }}>
-                                                    Upload to Server (requires backend)
-                                                </label>
-                                                <label
-                                                    className="flex flex-col items-center justify-center p-6 rounded-xl cursor-pointer transition-all hover:bg-amber-50"
-                                                    style={{ border: '2px dashed rgba(251,191,36,0.6)', minHeight: '96px' }}>
-                                                    <FaCloudUploadAlt className="text-3xl mb-2" style={{ color: '#f59e0b' }} />
-                                                    <span className="text-sm text-center" style={{ color: 'rgba(120,53,15,0.6)' }}>
-                                                        Click to upload JPG / PNG (max 5 MB)
-                                                    </span>
-                                                    <input type="file" accept="image/*" ref={fileInputRef}
-                                                        onChange={handleImageFile} className="hidden" />
-                                                </label>
-                                                <UploadStatus state={uploadState} />
+                                    {/* Image URL Section */}
+                                    <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-amber-50/50 border border-amber-200/60">
+                                        <h4 className="font-serif font-bold text-lg text-maroon mb-4">Display Image</h4>
+                                        <div className="flex flex-col lg:flex-row gap-6">
+
+                                            <div className="flex-1 space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-semibold mb-2 text-maroon/70">
+                                                        <FaImage className="inline mr-1" /> Upload from Computer (Max 2MB)
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/jpeg, image/png, image/webp"
+                                                        onChange={handleFileUpload}
+                                                        className="w-full text-sm text-maroon file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 transition-all cursor-pointer border border-amber-200 bg-white rounded-xl h-12 flex items-center px-1"
+                                                    />
+                                                </div>
+
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-px bg-amber-200/50 flex-1"></div>
+                                                    <span className="text-xs font-bold text-maroon/40 uppercase tracking-widest">OR</span>
+                                                    <div className="h-px bg-amber-200/50 flex-1"></div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-semibold mb-2 text-maroon/70">
+                                                        <FaLink className="inline mr-1" /> Image URL Link (Pexels, Unsplash, Google)
+                                                    </label>
+                                                    <input
+                                                        type="url"
+                                                        placeholder="https://images.pexels.com/..."
+                                                        value={form.imageUrl && form.imageUrl.startsWith('http') ? form.imageUrl : ''}
+                                                        onChange={handleImageUrl}
+                                                        className="w-full px-4 py-3.5 rounded-xl border border-amber-200 bg-white text-maroon outline-none focus:border-amber-400 transition-all text-sm"
+                                                    />
+                                                    <p className="text-xs text-maroon/50 mt-2 font-medium">Use Base64 file upload or external links. Avoid heavy direct static files.</p>
+                                                </div>
                                             </div>
 
-                                            {/* Or paste URL */}
-                                            <div>
-                                                <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(120,53,15,0.65)' }}>
-                                                    <FaLink className="inline mr-1" /> Or Paste Image URL
-                                                </label>
-                                                <input type="url" placeholder="https://example.com/temple.jpg"
-                                                    value={form.imageUrl} onChange={handleImageUrl}
-                                                    className="w-full px-4 py-3.5 rounded-xl border text-sm outline-none transition-all"
-                                                    style={{ borderColor: 'rgba(251,191,36,0.4)', background: '#fffdf5', color: '#7c2d12', minHeight: '96px' }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Preview */}
-                                        <AnimatePresence>
+                                            {/* Preview */}
                                             {form.imagePreview && (
-                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                                                    className="relative rounded-2xl overflow-hidden">
-                                                    <img src={form.imagePreview} alt="Preview"
-                                                        className="w-full h-52 object-cover rounded-2xl"
-                                                        onError={e => { e.target.style.display = 'none'; }} />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-2xl" />
-                                                    <motion.button type="button"
-                                                        onClick={() => { setForm(f => ({ ...f, imagePreview: '', imageUrl: '', uploadedFilename: '' })); setUploadState(null); }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                                                        style={{ background: 'rgba(239,68,68,0.9)', color: '#fff' }}>
-                                                        <FaTimes />
-                                                    </motion.button>
-                                                    <div className="absolute bottom-3 left-3 text-xs px-3 py-1 rounded-full font-semibold"
-                                                        style={{ background: '#25D366', color: '#fff' }}>
-                                                        Ready
+                                                <div className="relative w-full lg:w-48 shrink-0 rounded-2xl overflow-hidden shadow-inner border border-black/5 aspect-video lg:aspect-square bg-gray-100">
+                                                    <img
+                                                        src={form.imagePreview}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover"
+                                                        onError={e => { e.target.style.display = 'none'; }}
+                                                    />
+                                                    <div className="absolute top-2 right-2 text-[10px] px-2 py-1 rounded bg-black/60 text-white font-bold tracking-wider uppercase">
+                                                        Preview
                                                     </div>
-                                                </motion.div>
+                                                </div>
                                             )}
-                                        </AnimatePresence>
+                                        </div>
                                     </div>
 
-                                    <div className="flex gap-4">
-                                        <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                                            className="flex-1 py-4 font-bold text-lg rounded-xl"
-                                            style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#7c2d12', boxShadow: '0 4px 20px rgba(251,191,36,0.4)' }}>
-                                            {editId ? (<> Save Changes</>) : (<> Add Package</>)}
+                                    {/* Form Actions */}
+                                    <div className="flex flex-col sm:flex-row gap-4 pt-2 border-t border-amber-100">
+                                        <motion.button
+                                            type="submit"
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="flex-1 py-4 font-bold text-lg rounded-xl text-maroon bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg shadow-amber-500/20"
+                                        >
+                                            {editId ? 'Save Changes' : 'Create Package'}
                                         </motion.button>
-                                        <button type="button"
-                                            onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); setUploadState(null); }}
-                                            className="px-8 py-4 rounded-xl font-semibold border transition-all"
-                                            style={{ color: 'rgba(120,53,15,0.6)', borderColor: 'rgba(251,191,36,0.4)' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setShowForm(false); setEditId(null); setForm(emptyForm); }}
+                                            className="flex-1 sm:flex-none sm:px-10 py-4 rounded-xl font-bold bg-gray-50 text-maroon/60 border border-gray-200 hover:bg-gray-100 transition-all"
+                                        >
                                             Cancel
                                         </button>
                                     </div>
@@ -404,65 +398,102 @@ const AdminDashboard = () => {
                             )}
                         </AnimatePresence>
 
-                        {/* ── Package List ─────────────────────────────── */}
-                        <div className="space-y-3">
+                        {/* Package List / Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {loading ? (
-                                <div className="text-center py-16">
-
-                                    <p className="text-lg font-serif" style={{ color: 'rgba(120,53,15,0.4)' }}>Loading packages...</p>
+                                <div className="col-span-full py-20 flex flex-col items-center">
+                                    <div className="w-10 h-10 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4" />
+                                    <p className="text-maroon/50 font-serif text-lg">Loading packages...</p>
                                 </div>
                             ) : packages.length === 0 ? (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                    className="bg-white rounded-3xl p-16 text-center"
-                                    style={{ border: '2px dashed rgba(251,191,36,0.35)' }}>
-
-                                    <p className="text-lg font-serif font-bold" style={{ color: 'rgba(120,53,15,0.4)' }}>No packages yet</p>
-                                    <p className="text-sm mt-1" style={{ color: 'rgba(120,53,15,0.35)' }}>Click "Add Package" to get started.</p>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="col-span-full bg-white rounded-3xl p-16 text-center border-2 border-dashed border-amber-300/50"
+                                >
+                                    <p className="text-2xl font-serif font-bold text-maroon/40 mb-2">No packages yet</p>
+                                    <p className="text-maroon/40">Click "Add Package" to start building your tours.</p>
                                 </motion.div>
                             ) : packages.map((pkg, i) => (
-                                <motion.div key={pkg._id}
-                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.04 }}
-                                    className="bg-white rounded-2xl overflow-hidden flex flex-col sm:flex-row"
-                                    style={{ border: '1.5px solid rgba(251,191,36,0.2)', boxShadow: '0 2px 16px rgba(120,53,15,0.07)' }}>
-
-                                    <div className="w-full sm:w-40 h-32 sm:h-auto shrink-0 overflow-hidden bg-amber-50">
-                                        <img src={pkg.images?.[0] || 'https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg?auto=compress&cs=tinysrgb&w=400'}
-                                            alt={pkg.title} className="w-full h-full object-cover"
-                                            onError={e => e.target.src = 'https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg?auto=compress&cs=tinysrgb&w=400'} />
+                                <motion.div
+                                    key={pkg._id}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: i * 0.03 }}
+                                    className="bg-white rounded-3xl overflow-hidden flex flex-col border border-amber-200/40 shadow-xl shadow-stone-200/50 hover:shadow-2xl hover:shadow-amber-900/10 transition-shadow duration-300"
+                                >
+                                    {/* Card Image */}
+                                    <div className="w-full h-48 sm:h-56 relative bg-gray-100 overflow-hidden">
+                                        <img
+                                            src={pkg.images?.[0] || 'https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg'}
+                                            alt={pkg.title}
+                                            className="w-full h-full object-cover"
+                                            onError={e => e.target.src = 'https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg'}
+                                        />
+                                        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                                            {pkg.category}
+                                        </div>
                                     </div>
 
-                                    <div className="flex-1 p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-serif font-bold text-lg truncate" style={{ color: '#7c2d12' }}>{pkg.title}</h4>
-                                            <p className="text-sm mt-0.5" style={{ color: 'rgba(120,53,15,0.6)' }}>
-                                                {pkg.destination} ·  {pkg.duration}
+                                    {/* Card Content */}
+                                    <div className="p-6 flex flex-col flex-1">
+                                        <div className="flex-1">
+                                            <h4 className="font-serif justify-between font-bold text-xl text-maroon mb-1 line-clamp-2 leading-tight">
+                                                {pkg.title}
+                                            </h4>
+                                            <p className="text-sm font-semibold text-amber-700/80 mb-3">
+                                                {pkg.destination}
                                             </p>
-                                            <p className="font-bold mt-1" style={{ color: '#f59e0b' }}>₹{pkg.price?.toLocaleString()} / person</p>
+
+                                            <div className="flex items-center gap-2 text-sm text-maroon/60 mb-4 bg-amber-50/50 py-2 px-3 rounded-lg border border-amber-100">
+                                                <span className="font-bold text-maroon">Duration:</span> {pkg.duration}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3 shrink-0">
-                                            <span className="text-xs font-semibold px-3 py-1.5 rounded-full"
-                                                style={{ background: 'rgba(251,191,36,0.12)', color: '#92400e' }}>{pkg.category}</span>
-                                            <motion.button onClick={() => startEdit(pkg)}
-                                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                                className="w-10 h-10 rounded-full flex items-center justify-center"
-                                                style={{ background: 'rgba(251,191,36,0.12)', color: '#b45309' }}>
-                                                <FaEdit />
-                                            </motion.button>
-                                            <motion.button onClick={() => handleDelete(pkg)}
-                                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                                                className="w-10 h-10 rounded-full flex items-center justify-center"
-                                                style={{ background: 'rgba(239,68,68,0.09)', color: '#ef4444' }}>
-                                                <FaTrash />
-                                            </motion.button>
+
+                                        <div className="flex items-end justify-between pt-4 border-t border-gray-100">
+                                            <div>
+                                                <p className="text-xs font-bold text-maroon/40 uppercase tracking-wider mb-1">Pricing</p>
+                                                <p className="font-bold text-2xl text-amber-500 leading-none">
+                                                    ₹{pkg.price?.toLocaleString()}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <motion.button
+                                                    onClick={() => startEdit(pkg)}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                                    aria-label="Edit Package"
+                                                >
+                                                    <FaEdit />
+                                                </motion.button>
+                                                <motion.button
+                                                    onClick={() => handleDelete(pkg)}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                                                    aria-label="Delete Package"
+                                                >
+                                                    <FaTrash />
+                                                </motion.button>
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
                             ))}
                         </div>
                     </>
+                ) : activeTab === 'gallery' ? (
+                    // Gallery Tab
+                    <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-xl shadow-stone-200/50 border border-amber-200/40">
+                        <GalleryManager />
+                    </div>
                 ) : (
-                    <GalleryManager />
+                    // Testimonials Tab
+                    <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-xl shadow-stone-200/50 border border-amber-200/40">
+                        <TestimonialManager />
+                    </div>
                 )}
             </div>
         </div>

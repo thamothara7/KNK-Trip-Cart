@@ -1,74 +1,10 @@
 "use client";
-/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PackageCard from '../components/PackageCard';
 import { getPackages } from '../lib/actions';
 
-const dummyPackages = [
-    {
-        _id: "1",
-        title: "Tirupati Balaji Darshan",
-        destination: "Tirupati, Andhra Pradesh",
-        duration: "2 Days / 1 Night",
-        category: "South India Tours",
-        price: 3500,
-        description: "Experience a divine and peaceful darshan of Lord Venkateshwara with our special VIP access package, including comfortable AC transport and special care for seniors.",
-        images: ["https://images.pexels.com/photos/2161449/pexels-photo-2161449.jpeg?auto=compress&cs=tinysrgb&w=1200"]
-    },
-    {
-        _id: "2",
-        title: "Kasi Vishwanath Yatra",
-        destination: "Varanasi, Uttar Pradesh",
-        duration: "4 Days / 3 Nights",
-        category: "North India Tours",
-        price: 15000,
-        description: "A profound spiritual journey to the oldest living city. Includes Ganga Aarti viewing, temple darshans, and comfortable lodging with authentic vegetarian meals.",
-        images: ["https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg?auto=compress&cs=tinysrgb&w=1200"]
-    },
-    {
-        _id: "3",
-        title: "Ooty Mountain Retreat",
-        destination: "Ooty, Tamil Nadu",
-        duration: "3 Days / 2 Nights",
-        category: "Hills Trip",
-        price: 8500,
-        description: "Escape to the Queen of Hill Stations. Enjoy the botanical gardens, serene lakes, and the cool mountain breeze in luxury with special elderly care.",
-        images: ["https://images.pexels.com/photos/2104882/pexels-photo-2104882.jpeg?auto=compress&cs=tinysrgb&w=1200"]
-    },
-    {
-        _id: "4",
-        title: "Kanchipuram Temple Tour",
-        destination: "Kanchipuram, Tamil Nadu",
-        duration: "One Day Trip",
-        category: "One Day Trip",
-        price: 1500,
-        description: "Explore the city of thousand temples in a single day. Perfect for families looking for a quick and culturally rich weekend getaway with divine blessings.",
-        images: ["https://images.pexels.com/photos/2387871/pexels-photo-2387871.jpeg?auto=compress&cs=tinysrgb&w=1200"]
-    },
-    {
-        _id: "5",
-        title: "Rameshwaram & Dhanushkodi",
-        destination: "Rameshwaram, Tamil Nadu",
-        duration: "3 Days / 2 Nights",
-        category: "South India Tours",
-        price: 6000,
-        description: "Visit the sacred Ramanathaswamy Temple and explore the ghostly beauty of Dhanushkodi. A complete spiritual experience with comfortable stay.",
-        images: ["https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=1200"]
-    },
-    {
-        _id: "6",
-        title: "Char Dham Yatra",
-        destination: "Uttarakhand",
-        duration: "12 Days / 11 Nights",
-        category: "North India Tours",
-        price: 35000,
-        description: "The ultimate spiritual journey covering Yamunotri, Gangotri, Kedarnath, and Badrinath. Complete with comfortable transport and experienced guides.",
-        images: ["https://images.pexels.com/photos/1603650/pexels-photo-1603650.jpeg?auto=compress&cs=tinysrgb&w=1200"]
-    }
-];
-
-const categories = ['All', 'South India Tours', 'North India Tours', 'Hills Trip', 'One Day Trip'];
+const categories = ['All', 'South India Tours', 'North India Tours', 'Hills Trip', 'One Day Trip', 'Char Dham Yatra'];
 
 const Packages = () => {
     const [packages, setPackages] = useState([]);
@@ -87,7 +23,7 @@ const Packages = () => {
                 }
             } catch (error) {
                 console.error("Failed to load packages via Server Action:", error);
-                setPackages(dummyPackages);
+                setError(true);
             } finally {
                 setLoading(false);
             }
@@ -101,6 +37,7 @@ const Packages = () => {
 
     return (
         <div className="min-h-screen bg-cream" style={{ paddingTop: '0', paddingBottom: '64px' }}>
+            {/* Hero Banner Area */}
             <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#4e1e05 0%,#6e2d08 50%,#4e1e05 100%)', padding: '100px 16px 64px' }}>
                 <div className="absolute inset-0 opacity-10">
                     <img
@@ -121,7 +58,7 @@ const Packages = () => {
                     </motion.p>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#fde68a', fontSize: 'clamp(2rem, 6vw, 3.5rem)', lineHeight: 1.2, marginBottom: '12px' }}
+                        style={{ fontFamily: "var(--font-serif, 'Playfair Display')", fontWeight: 700, color: '#fde68a', fontSize: 'clamp(2rem, 6vw, 3.5rem)', lineHeight: 1.2, marginBottom: '12px' }}
                     >
                         Tour Packages
                     </motion.h1>
@@ -136,6 +73,7 @@ const Packages = () => {
             </div>
 
             <div className="max-w-7xl mx-auto" style={{ padding: '0 16px' }}>
+                {/* Filters */}
                 <motion.div
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
                     className="flex justify-center flex-wrap gap-2 sm:gap-3"
@@ -148,7 +86,7 @@ const Packages = () => {
                             style={{
                                 padding: '8px 18px',
                                 borderRadius: '999px',
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: "var(--font-sans, 'Poppins')",
                                 fontWeight: 600,
                                 fontSize: '0.8rem',
                                 letterSpacing: '0.03em',
@@ -165,52 +103,46 @@ const Packages = () => {
                     ))}
                 </motion.div>
 
+                {/* Loading State */}
                 {loading && (
-                    <div style={{ textAlign: 'center', padding: '80px 0' }}>
-                        <div style={{
-                            width: '44px', height: '44px', borderRadius: '50%',
-                            border: '3px solid rgba(251,191,36,0.2)',
-                            borderTop: '3px solid #fbbf24',
-                            margin: '0 auto 16px',
-                            animation: 'spin 0.8s linear infinite',
-                        }} />
-                        <p style={{ fontFamily: "'Playfair Display', serif", color: 'rgba(124,45,18,0.5)', fontSize: '1.1rem' }}>
-                            Loading packages…
-                        </p>
-                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="w-12 h-12 rounded-full border-4 border-amber-500/30 border-t-amber-500 animate-spin mb-4" />
+                        <p className="font-serif text-maroon/60 text-lg">Fetching divine destinations...</p>
                     </div>
                 )}
 
+                {/* Error State */}
                 {!loading && error && (
-                    <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🛕</div>
-                        <h2 style={{ fontFamily: "'Playfair Display', serif", color: '#7c2d12', fontSize: '1.5rem', marginBottom: '8px' }}>
-                            Backend Offline
-                        </h2>
-                        <p style={{ color: 'rgba(124,45,18,0.6)', fontSize: '0.95rem' }}>
-                            Could not connect to the server. Please check your database connection.
-                        </p>
+                    <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                        <div className="text-5xl mb-4">🛕</div>
+                        <h2 className="font-serif text-maroon text-2xl font-bold mb-2">Backend Connection Error</h2>
+                        <p className="text-maroon/70">Our servers are currently resting. Please try again later or check MongoDB configuration.</p>
                     </div>
                 )}
 
+                {/* Grid */}
                 {!loading && !error && (
                     <>
-                        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
+                        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                             {filteredPackages.map(pkg => (
                                 <PackageCard key={pkg._id} pkg={pkg} />
                             ))}
                         </motion.div>
 
+                        {/* Empty State */}
                         {filteredPackages.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🙏</div>
-                                <p style={{ fontFamily: "'Playfair Display', serif", color: 'rgba(124,45,18,0.5)', fontSize: '1.2rem' }}>
+                            <motion.div
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                className="flex flex-col items-center justify-center py-24 text-center px-4"
+                            >
+                                <div className="text-5xl mb-4">🙏</div>
+                                <h3 className="font-serif text-maroon font-bold text-2xl mb-2">No Packages Available</h3>
+                                <p className="text-maroon/60 max-w-md">
                                     {packages.length === 0
-                                        ? 'No packages have been added yet. Please add packages from the Admin Dashboard.'
-                                        : 'No packages found for this category.'
-                                    }
+                                        ? "There are currently no tour packages in the database. Please visit the Admin Dashboard to add new divine trips."
+                                        : `We couldn't find any packages under "${filter}".`}
                                 </p>
-                            </div>
+                            </motion.div>
                         )}
                     </>
                 )}

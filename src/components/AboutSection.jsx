@@ -119,9 +119,9 @@ const AboutSection = () => {
                         transition={{ delay: 0.3 }}
                         className="lg:col-span-2 grid grid-cols-3 gap-8 pt-12 border-t border-gold/30"
                     >
-                        <CountUp end={10} label="Years Experience" />
+                        <CountUp end={5} label="Years Experience" />
                         <CountUp end={50} label="Destinations" />
-                        <CountUp end={1000} label="Happy Pilgrims" />
+                        <CountUp end={500} label="Happy Pilgrims" />
                     </motion.div>
                 </div>
             </div>
