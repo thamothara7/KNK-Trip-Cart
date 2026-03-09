@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,61 +21,54 @@ const NAV_BG_TOP = 'linear-gradient(135deg,rgba(60,22,3,0.92) 0%,rgba(95,38,6,0.
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [isDesktop, setIsDesktop] = useState(true);
+    const [isMounted, setIsMounted] = useState(false);
+    const [currentHash, setCurrentHash] = useState('');
     const pathname = usePathname();
 
     useEffect(() => {
-        setIsDesktop(window.innerWidth >= 1024);
-        const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        setIsMounted(true);
+        setCurrentHash(window.location.hash);
+
+        const onScroll = () => setScrolled(window.scrollY > 40);
+        window.addEventListener('scroll', onScroll);
+
+        const onHashChange = () => setCurrentHash(window.location.hash);
+        window.addEventListener('hashchange', onHashChange);
+
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('hashchange', onHashChange);
+        };
     }, []);
 
     useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 40);
-        window.addEventListener('scroll', onScroll);
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-
-    useEffect(() => { setMobileOpen(false); }, [pathname]);
+        setMobileOpen(false);
+    }, [pathname, currentHash]);
 
     const isActive = (link) => {
+        if (!isMounted) return false;
         if (link.to.includes('#')) {
             const [basePath, hash] = link.to.split('#');
-            return pathname === basePath && (typeof window !== 'undefined' ? window.location.hash === `#${hash}` : false);
+            return pathname === basePath && currentHash === `#${hash}`;
         }
-        return pathname === link.to;
+        return pathname === link.to && currentHash === '';
     };
 
-    /* ─── Link renderer ─── */
     const renderNavLink = (link, i, mobile = false) => {
         const active = isActive(link);
         const isHash = link.to.includes('#');
+        const activeClassStr = active ? 'text-amber-300' : 'text-amber-100/90 hover:text-amber-300';
+        const mobileActiveClassStr = active ? 'text-amber-300 bg-amber-400/10 border-l-4 border-amber-300' : 'text-amber-100/90';
 
         if (mobile) {
             return (
-                <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                >
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}>
                     {isHash ? (
-                        <a
-                            href={link.to}
-                            className={`block px-5 py-3 rounded-xl font-bold transition-all duration-200 ${active ? 'text-amber-300 bg-amber-400/10 border-l-4 border-amber-300' : 'text-amber-100/90'
-                                }`}
-                            onClick={() => setMobileOpen(false)}
-                        >
+                        <a href={link.to} onClick={() => setMobileOpen(false)} className={`block px-5 py-3 rounded-xl font-bold transition-all duration-200 ${mobileActiveClassStr}`}>
                             {link.label}
                         </a>
                     ) : (
-                        <Link
-                            href={link.to}
-                            className={`block px-5 py-3 rounded-xl font-bold transition-all duration-200 ${active ? 'text-amber-300 bg-amber-400/10 border-l-4 border-amber-300' : 'text-amber-100/90'
-                                }`}
-                            onClick={() => setMobileOpen(false)}
-                        >
+                        <Link href={link.to} onClick={() => setMobileOpen(false)} className={`block px-5 py-3 rounded-xl font-bold transition-all duration-200 ${mobileActiveClassStr}`}>
                             {link.label}
                         </Link>
                     )}
@@ -87,19 +79,11 @@ const Navbar = () => {
         return (
             <div key={i} className="relative px-2">
                 {isHash ? (
-                    <a
-                        href={link.to}
-                        className={`px-3 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-lg ${active ? 'text-amber-300' : 'text-amber-100/90 hover:text-amber-300'
-                            }`}
-                    >
+                    <a href={link.to} className={`px-3 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-lg ${activeClassStr}`}>
                         {link.label}
                     </a>
                 ) : (
-                    <Link
-                        href={link.to}
-                        className={`px-3 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-lg ${active ? 'text-amber-300' : 'text-amber-100/90 hover:text-amber-300'
-                            }`}
-                    >
+                    <Link href={link.to} className={`px-3 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-lg ${activeClassStr}`}>
                         {link.label}
                     </Link>
                 )}
@@ -129,12 +113,13 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between" style={{ height: '75px' }}>
 
-                    {/* Logo */}
+                    {/* Logo area */}
                     <Link href="/" className="flex-shrink-0 flex items-center gap-3">
                         <Image
                             src={knkLogo}
-                            alt="KNK Trip Cart"
+                            alt="KNK Trip Cart Logo"
                             height={58}
+                            priority
                             style={{
                                 height: '58px',
                                 width: 'auto',
@@ -145,7 +130,7 @@ const Navbar = () => {
                         <div className="flex flex-col">
                             <span
                                 className="text-xl md:text-2xl font-bold tracking-wider text-amber-300 uppercase leading-none"
-                                style={{ fontFamily: 'Outfit, Poppins, sans-serif' }}
+                                style={{ fontFamily: 'var(--font-display, Outfit)' }}
                             >
                                 KNK Trip Cart
                             </span>
@@ -169,18 +154,19 @@ const Navbar = () => {
                         </a>
                     </nav>
 
-                    {/* Mobile Toggle */}
+                    {/* Mobile Toggle Button */}
                     <button
                         className="lg:hidden flex items-center justify-center w-11 h-11 rounded-xl"
                         style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)' }}
                         onClick={() => setMobileOpen(!mobileOpen)}
+                        aria-label="Toggle menu"
                     >
                         {mobileOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Mobile Menu Dropdown */}
             <AnimatePresence>
                 {mobileOpen && (
                     <motion.div

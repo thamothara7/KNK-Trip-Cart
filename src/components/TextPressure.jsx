@@ -168,16 +168,16 @@ const TextPressure = ({
           font-style: normal;
         }
 
-        .flex {
+        .tp-flex {
           display: flex;
           justify-content: space-between;
         }
 
-        .stroke span {
+        .tp-stroke span {
           position: relative;
           color: ${textColor};
         }
-        .stroke span::after {
+        .tp-stroke span::after {
           content: attr(data-char);
           position: absolute;
           left: 0;
@@ -195,7 +195,7 @@ const TextPressure = ({
         );
     }, [fontFamily, fontUrl, textColor, strokeColor]);
 
-    const dynamicClassName = [className, flex ? 'flex' : '', stroke ? 'stroke' : ''].filter(Boolean).join(' ');
+    const dynamicClassName = [className, flex ? 'tp-flex' : '', stroke ? 'tp-stroke' : ''].filter(Boolean).join(' ');
 
     return (
         <div
