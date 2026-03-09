@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaWhatsapp } from 'react-icons/fa';
 import TextPressure from './TextPressure';
@@ -6,6 +7,14 @@ import heroBg from '../assets/architecture-color-holy-beautiful-detail.jpg';
 
 const HeroSection = () => {
     const whatsappUrl = "https://wa.me/919629202940?text=Namaste!%20I%20am%20interested%20in%20booking%20a%20devotional%20trip.%20Please%20share%20details.";
+
+    /* ── Responsive state (safe: updated on resize) ── */
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -16,40 +25,47 @@ const HeroSection = () => {
                     alt="Sacred Indian Temple"
                     className="w-full h-full object-cover object-center"
                 />
-                {/* Dark warm overlay so text is readable */}
-                <div className="absolute inset-0"
+                <div
+                    className="absolute inset-0"
                     style={{ background: 'linear-gradient(to bottom, rgba(50,20,5,0.72) 0%, rgba(80,32,8,0.55) 50%, rgba(30,12,3,0.82) 100%)' }}
                 />
             </div>
 
             {/* Content */}
-            <div className="relative z-20 text-center px-4 max-w-5xl mx-auto" style={{ paddingTop: '120px', paddingBottom: '80px' }}>
-
+            <div
+                className="relative z-20 text-center w-full max-w-5xl mx-auto"
+                style={{ padding: isMobile ? '100px 16px 60px' : '130px 24px 80px' }}
+            >
                 {/* Om Sai Ram badge */}
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
-                    className="tracking-[0.4em] uppercase text-sm md:text-base font-bold mb-6"
-                    style={{ color: '#fbbf24', textShadow: '0 0 20px rgba(251,191,36,0.6)' }}
+                    className="tracking-[0.4em] uppercase font-bold mb-4 sm:mb-6"
+                    style={{ color: '#fbbf24', textShadow: '0 0 20px rgba(251,191,36,0.6)', fontSize: isMobile ? '0.7rem' : '0.9rem' }}
                 >
                     ✦ Om Sai Ram ✦
                 </motion.p>
 
-                {/* TextPressure headline */}
-                <div className="relative z-30 mb-6" style={{ height: window.innerWidth < 768 ? '100px' : '150px' }}>
+                {/* ── TextPressure headline (variable-font Compressa VF — BUG FIXED) ── */}
+                {/* Bug was: passing fontFamily="Playfair Display" caused @font-face to map  */}
+                {/* Playfair Display → Compressa URL, breaking the font. Now uses defaults.  */}
+                <div
+                    className="relative z-30 mb-4 sm:mb-6 w-full"
+                    style={{ height: isMobile ? '80px' : '140px' }}
+                >
                     <TextPressure
-                        text="Your path to divine destinations"
-                        flex
+                        text="Your Path To Divine Destinations"
+                        flex={true}
                         alpha={false}
                         stroke={false}
-                        width
-                        weight
+                        width={true}
+                        weight={true}
                         italic={false}
                         textColor="#fef3c7"
                         strokeColor="#fbbf24"
-                        minFontSize={window.innerWidth < 768 ? 32 : 52}
-                        fontFamily="Playfair Display"
+                        minFontSize={isMobile ? 22 : 44}
+                        scale={false}
                     />
                 </div>
 
@@ -58,7 +74,7 @@ const HeroSection = () => {
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 1, delay: 0.6 }}
-                    className="w-32 mx-auto mb-8"
+                    className="w-28 sm:w-36 mx-auto mb-5 sm:mb-8"
                     style={{ height: '2px', background: 'linear-gradient(to right, transparent, #fbbf24, transparent)' }}
                 />
 
@@ -67,8 +83,8 @@ const HeroSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.7 }}
-                    className="text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed"
-                    style={{ color: 'rgba(254,243,199,0.85)', textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}
+                    className="mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed"
+                    style={{ color: 'rgba(254,243,199,0.85)', textShadow: '0 1px 8px rgba(0,0,0,0.5)', fontSize: isMobile ? '0.95rem' : '1.1rem' }}
                 >
                     Comfortable and well-organized devotional travel packages for devotees.
                     Special care and attention for senior citizens.
@@ -79,16 +95,12 @@ const HeroSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.9 }}
-                    className="flex flex-col sm:flex-row gap-4 justify-center"
+                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0"
                 >
                     <a
                         href="/packages"
-                        className="px-10 py-4 font-bold rounded-full text-base tracking-widest uppercase transition-all duration-300 hover:-translate-y-1"
-                        style={{
-                            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                            color: '#7c2d12',
-                            boxShadow: '0 6px 28px rgba(251,191,36,0.5)',
-                        }}
+                        className="px-8 sm:px-10 py-3 sm:py-4 font-bold rounded-full tracking-widest uppercase transition-all duration-300 hover:-translate-y-1 text-sm sm:text-base text-center"
+                        style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', color: '#7c2d12', boxShadow: '0 6px 28px rgba(251,191,36,0.5)' }}
                     >
                         View Packages
                     </a>
@@ -96,12 +108,12 @@ const HeroSection = () => {
                         href={whatsappUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-10 py-4 border-2 font-bold rounded-full text-base tracking-widest uppercase transition-all duration-300 hover:-translate-y-1 flex items-center gap-3 justify-center"
+                        className="px-8 sm:px-10 py-3 sm:py-4 border-2 font-bold rounded-full tracking-widest uppercase transition-all duration-300 hover:-translate-y-1 flex items-center gap-3 justify-center text-sm sm:text-base"
                         style={{ borderColor: '#fbbf24', color: '#fef3c7', backdropFilter: 'blur(8px)' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.8)'; e.currentTarget.style.borderColor = '#16a34a'; }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.85)'; e.currentTarget.style.borderColor = '#16a34a'; }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = '#fbbf24'; }}
                     >
-                        <FaWhatsapp className="text-xl" /> Chat on WhatsApp
+                        <FaWhatsapp className="text-lg sm:text-xl" /> Chat on WhatsApp
                     </a>
                 </motion.div>
 
@@ -110,7 +122,7 @@ const HeroSection = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.2 }}
-                    className="flex flex-wrap justify-center gap-6 mt-10 text-sm font-semibold"
+                    className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-sm font-semibold"
                     style={{ color: 'rgba(251,191,36,0.75)' }}
                 >
                     <span>5+ Years Experience</span>
@@ -121,8 +133,9 @@ const HeroSection = () => {
                 </motion.div>
             </div>
 
-            {/* Bottom fade into page */}
-            <div className="absolute bottom-0 left-0 right-0 h-28 z-20"
+            {/* Bottom fade */}
+            <div
+                className="absolute bottom-0 left-0 right-0 h-20 sm:h-28 z-20"
                 style={{ background: 'linear-gradient(to top, #fef9ee, transparent)' }}
             />
         </section>
