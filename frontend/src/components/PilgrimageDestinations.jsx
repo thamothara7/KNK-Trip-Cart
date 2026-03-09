@@ -1,6 +1,7 @@
+"use client";
 /* eslint-disable no-unused-vars */
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const destinations = [
     {
@@ -101,7 +102,7 @@ const PilgrimageDestinations = () => {
                                 </h3>
                                 <p className="text-amber-100/80 text-sm mb-4">{dest.description}</p>
                                 <Link
-                                    to="/packages"
+                                    href="/packages"
                                     className="block text-center py-3 px-4 rounded-xl font-bold text-base text-maroon transition-all duration-300 hover:scale-105"
                                     style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}
                                 >

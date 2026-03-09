@@ -1,3 +1,4 @@
+"use client";
 /* eslint-disable no-unused-vars */
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';

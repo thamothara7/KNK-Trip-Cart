@@ -1,11 +1,13 @@
+"use client";
 /* eslint-disable no-unused-vars */
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+import Image from 'next/image';
 import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaInstagram, FaFacebookF } from 'react-icons/fa';
 import knkLogo from '../assets/file_000000009b94720784d2ef29a08ad1c8.png';
 
 const Footer = () => {
     return (
-        <footer style={{ background: 'linear-gradient(180deg,#3b1206 0%,#1e0903 100%)' }} className="text-amber-100 mt-12">
+        <footer style={{ background: 'linear-gradient(180deg,#3b1206 0%,#1e0903 100%)' }} className="text-amber-100 mt-12 pb-24 md:pb-0">
             {/* Gold top border */}
             <div style={{ height: '2px', background: 'linear-gradient(90deg,transparent,#fbbf24,#fde68a,#fbbf24,transparent)' }} />
 
@@ -15,9 +17,10 @@ const Footer = () => {
                     {/* Brand */}
                     <div className="sm:col-span-2 lg:col-span-1">
                         <div className="flex items-center gap-3 mb-5">
-                            <img
+                            <Image
                                 src={knkLogo}
                                 alt="KNK Trip Cart"
+                                height={56}
                                 style={{
                                     height: '56px',
                                     width: 'auto',
@@ -55,7 +58,7 @@ const Footer = () => {
                         <ul className="space-y-2.5">
                             {['South India Tours', 'North India Tours', 'One Day Trip', 'Hills Trip', 'Char Dham Yatra'].map(p => (
                                 <li key={p}>
-                                    <Link to="/packages" className="text-amber-100/60 hover:text-amber-300 transition-colors text-sm flex items-center gap-2">
+                                    <Link href="/packages" className="text-amber-100/60 hover:text-amber-300 transition-colors text-sm flex items-center gap-2">
                                         <span className="text-amber-500">›</span> {p}
                                     </Link>
                                 </li>
@@ -80,7 +83,7 @@ const Footer = () => {
                                             <span className="text-amber-500">›</span> {lnk.label}
                                         </a>
                                     ) : (
-                                        <Link to={lnk.to} className="text-amber-100/60 hover:text-amber-300 transition-colors text-sm flex items-center gap-2">
+                                        <Link href={lnk.to} className="text-amber-100/60 hover:text-amber-300 transition-colors text-sm flex items-center gap-2">
                                             <span className="text-amber-500">›</span> {lnk.label}
                                         </Link>
                                     )}

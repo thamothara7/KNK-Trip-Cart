@@ -1,3 +1,4 @@
+"use client";
 /* eslint-disable no-unused-vars */
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';

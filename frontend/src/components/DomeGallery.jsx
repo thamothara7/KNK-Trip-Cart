@@ -1,3 +1,4 @@
+"use client";
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useGesture } from '@use-gesture/react';

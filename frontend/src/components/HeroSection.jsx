@@ -1,3 +1,4 @@
+"use client";
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -6,28 +7,29 @@ import TextPressure from './TextPressure';
 import heroBg from '../assets/architecture-color-holy-beautiful-detail.jpg';
 
 const HeroSection = () => {
-    const whatsappUrl = "https://wa.me/919629202940?text=Namaste!%20I%20am%20interested%20in%20booking%20a%20devotional%20trip.%20Please%20share%20details.";
+    const [isMobile, setIsMobile] = useState(false);
 
-    /* ── Responsive state (safe: updated on resize) ── */
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     useEffect(() => {
-        const onResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
+        setIsMobile(window.innerWidth < 768);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const whatsappUrl = "https://wa.me/919629202940?text=Namaste!%20I%20am%20interested%20in%20booking%20a%20devotional%20trip.%20Please%20share%20details.";
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <img
-                    src={heroBg}
+                    src={heroBg.src}
                     alt="Sacred Indian Temple"
                     className="w-full h-full object-cover object-center"
                 />
                 <div
                     className="absolute inset-0"
-                    style={{ background: 'linear-gradient(to bottom, rgba(50,20,5,0.72) 0%, rgba(80,32,8,0.55) 50%, rgba(30,12,3,0.82) 100%)' }}
+                    style={{ background: 'linear-gradient(to bottom, rgba(60, 24, 6, 0.72) 0%, rgba(80,32,8,0.55) 50%, rgba(30,12,3,0.82) 100%)' }}
                 />
             </div>
 
@@ -47,13 +49,8 @@ const HeroSection = () => {
                     ✦ Om Sai Ram ✦
                 </motion.p>
 
-                {/* ── TextPressure headline (variable-font Compressa VF — BUG FIXED) ── */}
-                {/* Bug was: passing fontFamily="Playfair Display" caused @font-face to map  */}
-                {/* Playfair Display → Compressa URL, breaking the font. Now uses defaults.  */}
-                <div
-                    className="relative z-30 mb-4 sm:mb-6 w-full"
-                    style={{ height: isMobile ? '80px' : '140px' }}
-                >
+                {/* TextPressure headline */}
+                <div className="relative z-30 mb-6" style={{ height: isMobile ? '100px' : '150px' }}>
                     <TextPressure
                         text="Your Path To Divine Destinations"
                         flex={true}
@@ -61,11 +58,11 @@ const HeroSection = () => {
                         stroke={false}
                         width={true}
                         weight={true}
-                        italic={false}
+                        italic={true}
                         textColor="#fef3c7"
                         strokeColor="#fbbf24"
-                        minFontSize={isMobile ? 22 : 44}
-                        scale={false}
+                        minFontSize={isMobile ? 32 : 52}
+                        fontFamily="Playfair Display"
                     />
                 </div>
 
@@ -73,9 +70,9 @@ const HeroSection = () => {
                 <motion.div
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
-                    transition={{ duration: 1, delay: 0.6 }}
-                    className="w-28 sm:w-36 mx-auto mb-5 sm:mb-8"
-                    style={{ height: '2px', background: 'linear-gradient(to right, transparent, #fbbf24, transparent)' }}
+                    transition={{ duration: 2, delay: 0.6 }}
+                    className="w-42 mx-auto mb-8"
+                    style={{ height: '1px', background: 'linear-gradient(to right, transparent, #fbbf24, transparent)' }}
                 />
 
                 {/* Subtitle */}
