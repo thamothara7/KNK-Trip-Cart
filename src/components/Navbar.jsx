@@ -149,7 +149,7 @@ const Navbar = () => {
                         {navLinks.map((link, i) => renderNavLink(link, i))}
 
                         <a
-                            href="tel:+919629202940"
+                            href="tel:+919384301588"
                             className="ml-4 flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-maroon transition-all duration-300 hover:scale-105"
                             style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 4px 15px rgba(251,191,36,0.3)' }}
                         >
@@ -183,12 +183,12 @@ const Navbar = () => {
                         <div className="px-4 py-6 space-y-2">
                             {navLinks.map((link, i) => renderNavLink(link, i, true))}
                             <a
-                                href="tel:+919629202940"
+                                href="tel:+919384301588"
                                 className="flex items-center justify-center gap-3 w-full py-4 mt-4 rounded-xl font-bold text-maroon"
                                 style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}
                             >
                                 <FaPhone size={16} />
-                                +919384301588
+                                +91 9384301588
                             </a>
                         </div>
                     </motion.div>
