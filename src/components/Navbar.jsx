@@ -154,7 +154,7 @@ const Navbar = () => {
                             style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 4px 15px rgba(251,191,36,0.3)' }}
                         >
                             <FaPhone size={14} />
-                            +91 96292 02940
+                            +91 9384301588
                         </a>
                     </nav>
 
@@ -188,7 +188,7 @@ const Navbar = () => {
                                 style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}
                             >
                                 <FaPhone size={16} />
-                                +91 96292 02940
+                                +919384301588
                             </a>
                         </div>
                     </motion.div>
