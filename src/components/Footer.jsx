@@ -39,7 +39,7 @@ const Footer = () => {
                         {/* Social */}
                         <div className="flex flex-wrap gap-3">
                             {[
-                                { icon: FaWhatsapp, href: 'https://wa.me/919629202940', color: '#25D366', label: 'WhatsApp' },
+                                { icon: FaWhatsapp, href: 'https://wa.me/919384301588', color: '#25D366', label: 'WhatsApp' },
                                 { icon: FaInstagram, href: 'https://www.instagram.com/knktripcart/', color: '#E1306C', label: 'Instagram' },
                                 { icon: FaFacebookF, href: 'https://www.facebook.com/knktripcart/', color: '#1877F2', label: 'Facebook' },
                             ].map(s => (
@@ -99,7 +99,7 @@ const Footer = () => {
                             <a href="tel:+919629202940"
                                 className="flex items-start gap-3 text-amber-100/65 hover:text-amber-300 transition-colors text-sm">
                                 <FaPhoneAlt className="text-amber-400 mt-0.5 shrink-0" />
-                                +91 96292 02940
+                                +91 9384301588
                             </a>
                             <a href="mailto:saishivatours@gmail.com"
                                 className="flex items-start gap-3 text-amber-100/65 hover:text-amber-300 transition-colors text-sm break-all">
@@ -108,7 +108,7 @@ const Footer = () => {
                             </a>
                             <p className="flex items-start gap-3 text-amber-100/65 text-sm">
                                 <FaMapMarkerAlt className="text-amber-400 mt-0.5 shrink-0" />
-                                Shop no 2, Saraswathi Complex, C.T.H.Road, Devi Nagar, Thiruninravur – 602024.
+                                Shop No 5, Sais Online Service , Lakshmi Theatre Complex, Thiruninravur – 602024.
                             </p>
                         </div>
                     </div>
