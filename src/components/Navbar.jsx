@@ -8,17 +8,17 @@ import { FaBars, FaTimes, FaPhone } from 'react-icons/fa';
 import knkLogo from '../assets/Gemini_Generated_Image_vvyvj2vvyvj2vvyv-Photoroom.png';
 
 const navLinks = [
-    { to: '/',        label: 'Home' },
-    { to: '/#about',  label: 'About' },
+    { to: '/',         label: 'Home' },
+    { to: '/#about',   label: 'About' },
     { to: '/packages', label: 'Packages' },
-    { to: '/gallery', label: 'Gallery' },
-    { to: '/contact', label: 'Contact' },
+    { to: '/gallery',  label: 'Gallery' },
+    { to: '/contact',  label: 'Contact' },
 ];
 
 const NAV_BG_SCROLLED = 'linear-gradient(135deg,rgba(78,30,5,0.98) 0%,rgba(110,45,8,0.98) 50%,rgba(78,30,5,0.98) 100%)';
-const NAV_BG_TOP      = 'linear-gradient(135deg,rgba(60,22,3,0.92) 0%,rgba(95,38,6,0.92) 50%,rgba(60,22,3,0.92) 100%)';
+const NAV_BG_TOP      = 'linear-gradient(135deg,rgba(60,22,3,0.95) 0%,rgba(95,38,6,0.95) 50%,rgba(60,22,3,0.95) 100%)';
 
-const Navbar = () => {
+export default function Navbar() {
     const [scrolled,    setScrolled]    = useState(false);
     const [mobileOpen,  setMobileOpen]  = useState(false);
     const [isMounted,   setIsMounted]   = useState(false);
@@ -29,9 +29,8 @@ const Navbar = () => {
         setIsMounted(true);
         setCurrentHash(window.location.hash);
 
-        const onScroll    = () => setScrolled(window.scrollY > 40);
+        const onScroll     = () => setScrolled(window.scrollY > 40);
         const onHashChange = () => setCurrentHash(window.location.hash);
-
         window.addEventListener('scroll', onScroll);
         window.addEventListener('hashchange', onHashChange);
         return () => {
@@ -40,10 +39,16 @@ const Navbar = () => {
         };
     }, []);
 
-    // Close mobile menu on navigation
+    // ✅ FIX: Reset hash whenever the pathname changes (e.g. /#about → /)
+    // Without this, currentHash stays as '#about' and Home never gets the underline.
+    useEffect(() => {
+        setCurrentHash(window.location.hash);
+    }, [pathname]);
+
+    // Close menu on route/hash change
     useEffect(() => { setMobileOpen(false); }, [pathname, currentHash]);
 
-    // Lock body scroll when mobile menu is open
+    // Lock body scroll when menu open
     useEffect(() => {
         document.body.style.overflow = mobileOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
@@ -51,49 +56,18 @@ const Navbar = () => {
 
     const isActive = (link) => {
         if (!isMounted) return false;
-        if (link.to.includes('#')) {
-            const [basePath, hash] = link.to.split('#');
-            return pathname === basePath && currentHash === `#${hash}`;
+        if (link.to === '/') {
+            return pathname === '/' && (!currentHash || currentHash === '');
         }
-        return pathname === link.to && currentHash === '';
+        if (link.to.includes('#')) {
+            const [base, hash] = link.to.split('#');
+            return pathname === base && currentHash === `#${hash}`;
+        }
+        return pathname.startsWith(link.to);
     };
 
+    // Don't show navbar on admin pages
     if (pathname?.startsWith('/admin')) return null;
-
-    // ── Desktop link renderer
-    const DesktopLink = ({ link, i }) => {
-        const active = isActive(link);
-        const cls = `px-3 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-300 rounded-lg ${active ? 'text-amber-300' : 'text-amber-100/90 hover:text-amber-300'}`;
-        return (
-            <div className="relative px-1">
-                {link.to.includes('#')
-                    ? <a href={link.to} className={cls}>{link.label}</a>
-                    : <Link href={link.to} className={cls}>{link.label}</Link>
-                }
-                {active && (
-                    <motion.span
-                        layoutId="nav-underline"
-                        className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full"
-                        style={{ background: 'linear-gradient(90deg,#fbbf24,#f59e0b)' }}
-                    />
-                )}
-            </div>
-        );
-    };
-
-    // ── Mobile link renderer
-    const MobileLink = ({ link, i }) => {
-        const active = isActive(link);
-        const cls = `flex items-center px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 ${active ? 'text-amber-300 bg-amber-400/10 border-l-4 border-amber-300' : 'text-amber-100/90 hover:bg-white/5'}`;
-        return (
-            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}>
-                {link.to.includes('#')
-                    ? <a href={link.to} onClick={() => setMobileOpen(false)} className={cls}>{link.label}</a>
-                    : <Link href={link.to} onClick={() => setMobileOpen(false)} className={cls}>{link.label}</Link>
-                }
-            </motion.div>
-        );
-    };
 
     return (
         <header
@@ -101,8 +75,9 @@ const Navbar = () => {
             style={{
                 background: scrolled ? NAV_BG_SCROLLED : NAV_BG_TOP,
                 backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 borderBottom: '1px solid rgba(251,191,36,0.15)',
-                boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
+                boxShadow: scrolled ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
             }}
         >
             {/* Gold accent line */}
@@ -111,61 +86,152 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center justify-between" style={{ height: '62px' }}>
 
-                    {/* Logo */}
-                    <Link href="/" className="flex-shrink-0 flex items-center gap-2.5 min-w-0">
+                    {/* ── Logo ── */}
+                    <Link href="/" className="flex items-center gap-2 shrink-0" onClick={() => {
+                        setCurrentHash('');
+                        setMobileOpen(false);
+                        if (pathname === '/') window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}>
                         <Image
                             src={knkLogo}
                             alt="KNK Trip Cart"
-                            height={44}
+                            height={40}
                             priority
-                            style={{ height: '44px', width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(251,191,36,0.45))' }}
+                            style={{ height: '40px', width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(251,191,36,0.4))' }}
                         />
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-base sm:text-lg font-bold tracking-wider text-amber-300 uppercase leading-none truncate"
-                                style={{ fontFamily: 'var(--font-display,Outfit)' }}>
+                        <div className="flex flex-col leading-none">
+                            <span style={{
+                                fontFamily: 'Outfit, sans-serif',
+                                fontWeight: 700,
+                                fontSize: 'clamp(0.7rem, 2.8vw, 1rem)',
+                                color: '#fbbf24',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.08em',
+                                whiteSpace: 'nowrap',
+                            }}>
                                 KNK Trip Cart
                             </span>
-                            <span className="text-[0.55rem] tracking-[0.18em] font-medium text-amber-100/70 uppercase">
+                            <span className="hidden sm:block" style={{
+                                fontFamily: 'Outfit, sans-serif',
+                                fontSize: '0.5rem',
+                                color: 'rgba(253,230,138,0.7)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.15em',
+                                fontWeight: 500,
+                            }}>
                                 Spiritual Travels
                             </span>
                         </div>
                     </Link>
 
-                    {/* Desktop nav */}
-                    <nav className="hidden lg:flex items-center gap-0.5 ml-4">
-                        {navLinks.map((link, i) => <DesktopLink key={link.to} link={link} i={i} />)}
+                    {/* ── Desktop nav links (lg+) ── */}
+                    {/*
+                        UNDERLINE APPROACH:
+                        Each nav item is a flex column that fills the full 62px navbar height.
+                        The link sits at centre, and the underline bar is a div pinned to
+                        the bottom of the 62px container — this guarantees it always sits
+                        at the exact bottom edge of the navbar regardless of content.
+                    */}
+                    <nav className="hidden lg:flex items-stretch h-full gap-0.5" style={{ height: '62px' }}>
+                        {navLinks.map((link) => {
+                            const active = isActive(link);
+                            return (
+                                <div key={link.to} className="relative flex flex-col justify-center">
+                                    {/* The link text */}
+                                    <Link
+                                        href={link.to}
+                                        onClick={() => {
+                                            if (link.to.includes('#')) {
+                                                setCurrentHash(link.to.substring(link.to.indexOf('#')));
+                                            } else {
+                                                setCurrentHash('');
+                                                if (pathname === link.to) window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }
+                                        }}
+                                        className="px-3 text-sm font-bold uppercase tracking-wider transition-colors duration-200"
+                                        style={{ color: active ? '#fbbf24' : 'rgba(253,230,138,0.85)' }}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                    {/* Underline — lifted slightly up from the bottom */}
+                                    {active && (
+                                        <motion.div
+                                            layoutId="underline"
+                                            className="absolute left-1 right-1 rounded-full"
+                                            style={{
+                                                bottom: '12px',
+                                                height: '3px',
+                                                background: 'linear-gradient(90deg, #fbbf24, #f59e0b)',
+                                                boxShadow: '0 0 8px rgba(251,191,36,0.7)',
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
+
+
                         <a
                             href="tel:+919384301588"
-                            className="ml-3 flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm text-amber-950 hover:scale-105 transition-all duration-300 whitespace-nowrap"
-                            style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', boxShadow: '0 4px 15px rgba(251,191,36,0.3)' }}
+                            className="ml-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold text-[13px] text-amber-400 transition-colors whitespace-nowrap"
                         >
-                            <FaPhone size={13} />
-                            <span>Call Us</span>
+                            <FaPhone size={12} />
+                            <span className="tracking-wide">+91 93843 01588</span>
                         </a>
                     </nav>
 
-                    {/* Mobile: show phone + hamburger */}
-                    <div className="flex items-center gap-2 lg:hidden">
+                    {/* ── Mobile: Call + Hamburger (visible below lg) ── */}
+                    <div className="flex lg:hidden items-center gap-2">
+
+                        {/* Call button — always visible */}
                         <a
                             href="tel:+919384301588"
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-full font-bold text-xs text-amber-950"
-                            style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)' }}
-                            aria-label="Call"
+                            aria-label="Call us"
+                            className="flex items-center justify-center gap-1.5 px-2 py-1 rounded-full font-semibold text-xs text-amber-400 hover:bg-amber-400/10 transition-colors"
                         >
                             <FaPhone size={12} />
-                            <span className="hidden xs:inline">Call</span>
+                            <span className="hidden sm:inline">+91 93843 01588</span>
                         </a>
+
+                        {/* Hamburger button */}
                         <button
-                            className="flex items-center justify-center w-10 h-10 rounded-xl"
-                            style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)' }}
-                            onClick={() => setMobileOpen(o => !o)}
-                            aria-label="Toggle menu"
+                            onClick={() => setMobileOpen(prev => !prev)}
+                            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
                             aria-expanded={mobileOpen}
+                            style={{
+                                width: '40px',
+                                height: '40px',
+                                flexShrink: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '10px',
+                                background: 'rgba(251,191,36,0.12)',
+                                border: '1px solid rgba(251,191,36,0.35)',
+                                color: '#fbbf24',
+                                cursor: 'pointer',
+                            }}
                         >
                             <AnimatePresence mode="wait" initial={false}>
                                 {mobileOpen
-                                    ? <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}><FaTimes size={20} /></motion.span>
-                                    : <motion.span key="bars" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}><FaBars size={20} /></motion.span>
+                                    ? <motion.span
+                                        key="x"
+                                        initial={{ rotate: -90, opacity: 0 }}
+                                        animate={{ rotate: 0, opacity: 1 }}
+                                        exit={{ rotate: 90, opacity: 0 }}
+                                        transition={{ duration: 0.15 }}
+                                      >
+                                        <FaTimes size={18} />
+                                      </motion.span>
+                                    : <motion.span
+                                        key="bars"
+                                        initial={{ rotate: 90, opacity: 0 }}
+                                        animate={{ rotate: 0, opacity: 1 }}
+                                        exit={{ rotate: -90, opacity: 0 }}
+                                        transition={{ duration: 0.15 }}
+                                      >
+                                        <FaBars size={18} />
+                                      </motion.span>
                                 }
                             </AnimatePresence>
                         </button>
@@ -173,27 +239,75 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Dropdown */}
+            {/* ── Mobile Dropdown Menu ── */}
             <AnimatePresence>
                 {mobileOpen && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="lg:hidden overflow-hidden border-t border-amber-400/10"
-                        style={{ background: 'linear-gradient(160deg,rgba(55,18,2,0.99),rgba(90,35,5,0.99))' }}
+                        transition={{ duration: 0.22, ease: 'easeInOut' }}
+                        className="lg:hidden overflow-hidden"
+                        style={{
+                            borderTop: '1px solid rgba(251,191,36,0.12)',
+                            background: 'linear-gradient(160deg,rgba(50,16,2,0.99),rgba(85,32,4,0.99))',
+                        }}
                     >
-                        <div className="px-4 py-4 space-y-1">
-                            {navLinks.map((link, i) => <MobileLink key={link.to} link={link} i={i} />)}
-                            <div className="pt-3 mt-1 border-t border-amber-400/10">
+                        <div className="px-4 py-3 space-y-1">
+                            {navLinks.map((link, i) => {
+                                const active = isActive(link);
+                                const linkStyle = {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '12px 16px',
+                                    borderRadius: '12px',
+                                    fontWeight: 700,
+                                    fontSize: '0.95rem',
+                                    color: active ? '#fbbf24' : 'rgba(253,230,138,0.85)',
+                                    background: active ? 'rgba(251,191,36,0.10)' : 'transparent',
+                                    borderLeft: `3px solid ${active ? '#fbbf24' : 'transparent'}`,
+                                    textDecoration: 'none',
+                                    transition: 'background 0.15s, color 0.15s',
+                                };
+                                return (
+                                    <motion.div
+                                        key={link.to}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.04 }}
+                                    >
+                                        <Link
+                                            href={link.to}
+                                            onClick={() => {
+                                                if (link.to.includes('#')) {
+                                                    setCurrentHash(link.to.substring(link.to.indexOf('#')));
+                                                } else {
+                                                    setCurrentHash('');
+                                                    if (pathname === link.to) window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }
+                                                setMobileOpen(false);
+                                            }}
+                                            style={linkStyle}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </motion.div>
+                                );
+                            })}
+
+                            <div style={{ paddingTop: '12px', marginTop: '4px', borderTop: '1px solid rgba(251,191,36,0.12)' }}>
                                 <a
                                     href="tel:+919384301588"
                                     onClick={() => setMobileOpen(false)}
-                                    className="flex items-center justify-center gap-3 w-full py-3.5 rounded-xl font-bold text-amber-950 text-sm"
-                                    style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)' }}
+                                    className="flex items-center justify-center gap-3 w-full font-semibold transition-colors hover:bg-amber-400/10 text-amber-400"
+                                    style={{
+                                        padding: '12px 0',
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        textDecoration: 'none',
+                                    }}
                                 >
-                                    <FaPhone size={15} />
+                                    <FaPhone size={14} />
                                     +91 93843 01588
                                 </a>
                             </div>
@@ -203,6 +317,4 @@ const Navbar = () => {
             </AnimatePresence>
         </header>
     );
-};
-
-export default Navbar;
+}

@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { FaWhatsapp } from 'react-icons/fa';
 import TextPressure from './TextPressure';
 import heroBg from '../assets/architecture-color-holy-beautiful-detail.jpg';
@@ -22,11 +23,13 @@ const HeroSection = () => {
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
-                <img
-                    src={heroBg.src}
+                <Image
+                    src={heroBg}
                     alt="Sacred Indian Temple"
-                    className="w-full h-full object-cover"
-                    
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover"
                 />
                 <div
                     className="absolute inset-0"
@@ -133,8 +136,8 @@ const HeroSection = () => {
 
             {/* Bottom fade */}
             <div
-                className="absolute bottom-0 left-0 right-0 h-20 sm:h-28 z-20"
-                style={{ background: 'linear-gradient(to top, #fef9ee, transparent)' }}
+                className="absolute bottom-0 left-0 right-0 h-20 sm:h-28 z-20 opacity-30"
+                style={{ background: 'linear-gradient(to top, rgba(241, 206, 119, 0.3), transparent)' }}
             />
         </section>
     );

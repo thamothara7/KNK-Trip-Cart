@@ -9,14 +9,27 @@ export function middleware(request) {
     if (pathname.startsWith('/admin')) {
         const session = request.cookies.get(COOKIE_NAME);
 
-        // If no valid session cookie, block access and return 401-like response
-        // The AdminDashboard component handles showing the login screen,
-        // so we let the page render but the cookie check in AdminDashboard
-        // controls what the user sees. Middleware here is an extra layer.
+        // If no valid session cookie, redirect to the admin page itself.
+        // The AdminDashboard component renders the login form when not authenticated.
+        // The middleware is a server-side guard — it lets the page render which
+        // then shows the login screen client-side. The cookie check in AdminDashboard
+        // (via checkAuth) is the actual gate that controls what the user sees.
+        //
+        // WHY customers can still visit /admin:
+        //   - The URL /admin is publicly accessible (returns the login form)
+        //   - Without the correct cookie, only the login form renders — no data is exposed
+        //   - All admin API routes (/api/packages, etc.) also check auth via the cookie
+        //
+        // If you want to completely hide the admin URL from customers:
+        //   - Keep the URL secret (don't link it anywhere on the public site)
+        //   - Alternatively, redirect to "/" if no session cookie:
+        //     if (!session?.value) {
+        //         return NextResponse.redirect(new URL('/', request.url));
+        //     }
+        //
+        // Current behaviour: show login form at /admin (no data exposed without login)
         if (!session?.value) {
-            // We don't redirect — the client-side route protection in
-            // AdminDashboard.jsx shows the login form. This is the server layer.
-            return NextResponse.next();
+            return NextResponse.next(); // Let AdminDashboard render its login form
         }
     }
 
