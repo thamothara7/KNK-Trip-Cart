@@ -2,42 +2,41 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PackageCard from '../components/PackageCard';
-import { getPackages } from '../lib/actions';
-
-const categories = ['All', 'South India Tours', 'North India Tours', 'Hills Trip', 'One Day Trip', 'Char Dham Yatra'];
+import { getPackages, getCategories } from '../lib/actions';
 
 const Packages = () => {
     const [packages, setPackages] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [filter, setFilter] = useState('All');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        const fetchPackages = async () => {
+        const load = async () => {
             try {
-                const data = await getPackages();
-                if (data && data.length > 0) {
-                    setPackages(data);
-                } else {
-                    setPackages([]);
-                }
-            } catch (error) {
-                console.error("Failed to load packages via Server Action:", error);
+                const [pkgs, cats] = await Promise.all([getPackages(), getCategories()]);
+                setPackages(pkgs || []);
+                setCategories(cats || []);
+            } catch (err) {
+                console.error('Failed to load packages:', err);
                 setError(true);
             } finally {
                 setLoading(false);
             }
         };
-        fetchPackages();
+        load();
     }, []);
+
+    // Build filter list dynamically from DB
+    const filterTabs = ['All', ...categories.map(c => c.name)];
 
     const filteredPackages = filter === 'All'
         ? packages
         : packages.filter(pkg => pkg.category === filter);
 
     return (
-        <div className="min-h-screen bg-cream" style={{ paddingTop: '0', paddingBottom: '64px' }}>
-            {/* Hero Banner Area */}
+        <div className="min-h-screen bg-cream" style={{ paddingBottom: '64px' }}>
+            {/* Hero Banner */}
             <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#4e1e05 0%,#6e2d08 50%,#4e1e05 100%)', padding: '100px 16px 64px' }}>
                 <div className="absolute inset-0 opacity-10">
                     <img
@@ -58,7 +57,7 @@ const Packages = () => {
                     </motion.p>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                        style={{ fontFamily: "var(--font-serif, 'Playfair Display')", fontWeight: 700, color: '#fde68a', fontSize: 'clamp(2rem, 6vw, 3.5rem)', lineHeight: 1.2, marginBottom: '12px' }}
+                        style={{ fontFamily: "var(--font-serif,'Playfair Display')", fontWeight: 700, color: '#fde68a', fontSize: 'clamp(2rem,6vw,3.5rem)', lineHeight: 1.2, marginBottom: '12px' }}
                     >
                         Tour Packages
                     </motion.h1>
@@ -72,55 +71,57 @@ const Packages = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto" style={{ padding: '0 16px' }}>
-                {/* Filters */}
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-                    className="flex justify-center flex-wrap gap-2 sm:gap-3"
-                    style={{ margin: '36px 0 32px' }}
-                >
-                    {categories.map(type => (
-                        <button
-                            key={type}
-                            onClick={() => setFilter(type)}
-                            style={{
-                                padding: '8px 18px',
-                                borderRadius: '999px',
-                                fontFamily: "var(--font-sans, 'Poppins')",
-                                fontWeight: 600,
-                                fontSize: '0.8rem',
-                                letterSpacing: '0.03em',
-                                cursor: 'pointer',
-                                border: filter === type ? 'none' : '1.5px solid rgba(124,45,18,0.25)',
-                                background: filter === type ? 'linear-gradient(135deg,#fbbf24,#f59e0b)' : '#fff',
-                                color: filter === type ? '#7c2d12' : '#7c2d12',
-                                boxShadow: filter === type ? '0 4px 14px rgba(251,191,36,0.4)' : '0 1px 4px rgba(0,0,0,0.06)',
-                                transition: 'all 0.25s',
-                            }}
-                        >
-                            {type}
-                        </button>
-                    ))}
-                </motion.div>
+            <div className="max-w-7xl mx-auto px-4">
+                {/* Category Filters — dynamic from DB */}
+                {!loading && !error && filterTabs.length > 1 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+                        className="flex justify-center flex-wrap gap-2 sm:gap-3"
+                        style={{ margin: '36px 0 32px' }}
+                    >
+                        {filterTabs.map(type => (
+                            <button
+                                key={type}
+                                onClick={() => setFilter(type)}
+                                style={{
+                                    padding: '8px 18px',
+                                    borderRadius: '999px',
+                                    fontWeight: 600,
+                                    fontSize: '0.8rem',
+                                    letterSpacing: '0.03em',
+                                    cursor: 'pointer',
+                                    border: filter === type ? 'none' : '1.5px solid rgba(124,45,18,0.25)',
+                                    background: filter === type ? 'linear-gradient(135deg,#fbbf24,#f59e0b)' : '#fff',
+                                    color: '#7c2d12',
+                                    boxShadow: filter === type ? '0 4px 14px rgba(251,191,36,0.4)' : '0 1px 4px rgba(0,0,0,0.06)',
+                                    transition: 'all 0.25s',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {type}
+                            </button>
+                        ))}
+                    </motion.div>
+                )}
 
-                {/* Loading State */}
+                {/* Loading */}
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="w-12 h-12 rounded-full border-4 border-amber-500/30 border-t-amber-500 animate-spin mb-4" />
-                        <p className="font-serif text-maroon/60 text-lg">Fetching divine destinations...</p>
+                        <p className="font-serif text-maroon/60 text-lg">Fetching divine destinations…</p>
                     </div>
                 )}
 
-                {/* Error State */}
+                {/* Error */}
                 {!loading && error && (
                     <div className="flex flex-col items-center justify-center py-20 text-center px-4">
                         <div className="text-5xl mb-4">🛕</div>
-                        <h2 className="font-serif text-maroon text-2xl font-bold mb-2">Backend Connection Error</h2>
-                        <p className="text-maroon/70">Our servers are currently resting. Please try again later or check MongoDB configuration.</p>
+                        <h2 className="font-serif text-maroon text-2xl font-bold mb-2">Connection Error</h2>
+                        <p className="text-maroon/70">Could not reach the server. Please check the MongoDB configuration.</p>
                     </div>
                 )}
 
-                {/* Grid */}
+                {/* Package Grid */}
                 {!loading && !error && (
                     <>
                         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -129,7 +130,6 @@ const Packages = () => {
                             ))}
                         </motion.div>
 
-                        {/* Empty State */}
                         {filteredPackages.length === 0 && (
                             <motion.div
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -139,8 +139,8 @@ const Packages = () => {
                                 <h3 className="font-serif text-maroon font-bold text-2xl mb-2">No Packages Available</h3>
                                 <p className="text-maroon/60 max-w-md">
                                     {packages.length === 0
-                                        ? "There are currently no tour packages in the database. Please visit the Admin Dashboard to add new divine trips."
-                                        : `We couldn't find any packages under "${filter}".`}
+                                        ? 'No packages in the database yet. Add some from the Admin Dashboard.'
+                                        : `No packages found under "${filter}".`}
                                 </p>
                             </motion.div>
                         )}
